@@ -1,24 +1,43 @@
-import { isSupabaseConfigured } from "@/lib/supabase/client"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import SignUpForm from "@/components/auth/sign-up-form"
 
 export default async function SignUpPage() {
-  if (!isSupabaseConfigured) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <h1 className="text-2xl font-bold mb-4">Connectez Supabase pour commencer</h1>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Configuration Supabase requise</h1>
+          <p className="text-muted-foreground">
+            Veuillez configurer les variables d'environnement Supabase dans les Project Settings.
+          </p>
+        </div>
       </div>
     )
   }
 
-  const supabase = createClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  try {
+    const supabase = createClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  if (session) {
-    redirect("/")
+    if (session) {
+      redirect("/")
+    }
+  } catch (error) {
+    console.error("Erreur Supabase:", error)
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Erreur de configuration Supabase</h1>
+          <p className="text-muted-foreground">Vérifiez vos variables d'environnement Supabase.</p>
+        </div>
+      </div>
+    )
   }
 
   return (
