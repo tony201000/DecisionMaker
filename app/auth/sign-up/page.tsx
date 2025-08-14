@@ -3,10 +3,7 @@ import { redirect } from "next/navigation"
 import SignUpForm from "@/components/auth/sign-up-form"
 
 export default async function SignUpPage() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
