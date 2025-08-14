@@ -22,10 +22,3 @@ export default function Page() {
     </div>
   )
 }
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
