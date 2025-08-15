@@ -21,15 +21,15 @@ export function Header({ user, loading }: HeaderProps) {
             <span className="text-xl font-bold text-foreground">DecisionAI</span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#fonctionnalites" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/fonctionnalites" className="text-muted-foreground hover:text-foreground transition-colors">
               Fonctionnalités
-            </a>
-            <a href="#methode" className="text-muted-foreground hover:text-foreground transition-colors">
+            </Link>
+            <Link href="/methode" className="text-muted-foreground hover:text-foreground transition-colors">
               Méthode
-            </a>
-            <a href="#temoignages" className="text-muted-foreground hover:text-foreground transition-colors">
+            </Link>
+            <Link href="/temoignages" className="text-muted-foreground hover:text-foreground transition-colors">
               Témoignages
-            </a>
+            </Link>
             {loading ? (
               <div className="flex space-x-2">
                 <div className="w-20 h-8 bg-muted animate-pulse rounded"></div>
