@@ -15,11 +15,11 @@ import {
   ChevronRight,
 } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { supabase } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 import { useDecision } from "@/hooks/use-decision"
 
 interface SidebarProps {
@@ -32,13 +32,15 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: SidebarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const { recentDecisions, loadDecision, currentDecision } = useDecision()
+  const { savedDecisions, loadDecision, currentDecision, getRecentDecisions } = useDecision()
+
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     const getUser = async () => {
       const {
         data: { user },
-      } = await supabase.auth.getUser()
+      } = await supabase.auth.getSession()
       setUser(user)
       setLoading(false)
     }
@@ -53,7 +55,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [supabase]) // Include memoized supabase in deps
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -73,8 +75,9 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
     onToggle() // Close sidebar on mobile after selection
   }
 
-  const formatDecisionTitle = (title: string) => {
-    return title.length > 25 ? `${title.substring(0, 25)}...` : title
+  const formatDecisionTitle = (title: string | null | undefined) => {
+    const safeTitle = title || "Décision sans titre"
+    return safeTitle.length > 25 ? `${safeTitle.substring(0, 25)}...` : safeTitle
   }
 
   const getRecommendationColor = (positiveScore: number, negativeScore: number) => {
@@ -83,6 +86,8 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
     if (ratio <= 0.5) return "text-red-600 dark:text-red-400"
     return "text-orange-600 dark:text-orange-400"
   }
+
+  const recentDecisions = getRecentDecisions(10)
 
   if (loading) {
     return (
@@ -211,14 +216,14 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
                     </Link>
                   </div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {(recentDecisions || []).slice(0, 10).map((decision) => {
+                    {recentDecisions.map((decision) => {
                       const isActive = currentDecision?.id === decision.id
-                      const positiveScore =
-                        decision.arguments?.filter((arg) => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0) ||
-                        0
+                      const argumentsArray = decision.arguments || []
+                      const positiveScore = argumentsArray
+                        .filter((arg) => arg?.weight > 0)
+                        .reduce((sum, arg) => sum + (arg?.weight || 0), 0)
                       const negativeScore = Math.abs(
-                        decision.arguments?.filter((arg) => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0) ||
-                          0,
+                        argumentsArray.filter((arg) => arg?.weight < 0).reduce((sum, arg) => sum + (arg?.weight || 0)),
                       )
                       const recommendation = getRecommendationColor(positiveScore, negativeScore)
 
@@ -253,7 +258,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
                                 </span>
                               </div>
                               <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(decision.updated_at).toLocaleDateString("fr-FR")}
+                                {new Date(decision.updated_at || decision.created_at).toLocaleDateString("fr-FR")}
                               </p>
                             </div>
                             <ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
@@ -299,13 +304,13 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Décisions prises</span>
-                      <Badge variant="secondary">{recentDecisions?.length || 0}</Badge>
+                      <Badge variant="secondary">{savedDecisions?.length || 0}</Badge>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Arguments ajoutés</span>
                       <Badge variant="secondary">
-                        {(recentDecisions || []).reduce(
-                          (total, decision) => total + (decision.arguments?.length || 0),
+                        {(savedDecisions || []).reduce(
+                          (total, decision) => total + (decision.arguments || []).length,
                           0,
                         )}
                       </Badge>

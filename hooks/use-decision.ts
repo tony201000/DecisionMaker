@@ -1,7 +1,7 @@
 "use client"
 
 import type { User } from "@supabase/supabase-js"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { AISuggestion, Argument, Decision } from "@/types/decision"
 
@@ -27,7 +27,8 @@ export function useDecision() {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
   const [savedDecisions, setSavedDecisions] = useState<SavedDecision[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
-  const supabase = createClient()
+
+  const supabase = useMemo(() => createClient(), [])
 
   const loadDecisionHistory = async (user: User | null) => {
     if (!user) return
@@ -60,22 +61,79 @@ export function useDecision() {
     }
   }
 
-  const loadDecision = (savedDecision: SavedDecision, setArgs: (args: Argument[]) => void) => {
-    setCurrentDecision({
-      id: savedDecision.id,
-      title: savedDecision.title,
-      description: savedDecision.description,
-      arguments: [],
-    })
+  const loadDecision = async (decisionIdOrObject: string | SavedDecision, setArgs?: (args: Argument[]) => void) => {
+    try {
+      let savedDecision: SavedDecision
 
-    // Convert saved arguments to current format
-    const loadedArgs: Argument[] = savedDecision.arguments.map((arg, index) => ({
-      id: `${savedDecision.id}-${index}`,
-      text: arg.text,
-      weight: arg.weight,
-    }))
+      // Handle both ID string and SavedDecision object
+      if (typeof decisionIdOrObject === "string") {
+        const decisionId = decisionIdOrObject
 
-    setArgs(loadedArgs)
+        // First try to find in savedDecisions cache
+        const cachedDecision = (savedDecisions || []).find((d) => d.id === decisionId)
+        if (cachedDecision) {
+          savedDecision = cachedDecision
+        } else {
+          // Fallback: fetch by ID from database
+          const { data, error } = await supabase
+            .from("decisions")
+            .select(`
+              id,
+              title,
+              description,
+              created_at,
+              arguments (
+                text,
+                weight
+              )
+            `)
+            .eq("id", decisionId)
+            .single()
+
+          if (error) {
+            console.error("Error loading decision by ID:", error)
+            alert("Erreur lors du chargement de la décision")
+            return
+          }
+
+          if (!data) {
+            console.error("Decision not found:", decisionId)
+            alert("Décision introuvable")
+            return
+          }
+
+          savedDecision = data
+        }
+      } else {
+        savedDecision = decisionIdOrObject
+      }
+
+      // Update current decision
+      setCurrentDecision({
+        id: savedDecision.id,
+        title: savedDecision.title || "Décision sans titre",
+        description: savedDecision.description || "",
+        arguments: [],
+      })
+
+      // Convert saved arguments to current format with null safety
+      const argumentsArray = savedDecision.arguments || []
+      const loadedArgs: Argument[] = argumentsArray.map((arg, index) => ({
+        id: `${savedDecision.id}-${index}`,
+        text: arg?.text || "",
+        weight: arg?.weight || 0,
+      }))
+
+      // Call setArgs if provided (for backward compatibility)
+      if (setArgs) {
+        setArgs(loadedArgs)
+      }
+
+      return loadedArgs
+    } catch (error) {
+      console.error("Error in loadDecision:", error)
+      alert("Erreur lors du chargement de la décision")
+    }
   }
 
   const createNewDecision = (clearArgs: () => void) => {
@@ -183,6 +241,12 @@ export function useDecision() {
     setAiSuggestions((prev) => prev.filter((s) => s.text !== suggestion.text))
   }
 
+  const getRecentDecisions = (count = 10) => {
+    const decisions = savedDecisions || []
+    const safeCount = Math.max(0, Math.min(count, decisions.length))
+    return decisions.slice(0, safeCount)
+  }
+
   return {
     currentDecision,
     setCurrentDecision,
@@ -197,5 +261,6 @@ export function useDecision() {
     loadDecisionHistory,
     loadDecision,
     createNewDecision,
+    getRecentDecisions, // Export safe recent decisions getter
   }
 }
