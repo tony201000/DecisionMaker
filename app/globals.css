@@ -6,11 +6,11 @@
 :root {
   /* Updated color tokens to match modern design brief with accent color #10b981 */
   --background: #ffffff;
-  --foreground: #164e63;
+  --foreground: #1f2937; /* Updated foreground color to neutral gray instead of cyan */
   --card: #ecfeff;
   --card-foreground: #475569;
   --popover: #ffffff;
-  --popover-foreground: #164e63;
+  --popover-foreground: #1f2937; /* Updated foreground color to neutral gray instead of cyan */
   --primary: #164e63;
   --primary-foreground: #ffffff;
   --secondary: #f97316;

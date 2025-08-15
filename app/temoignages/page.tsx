@@ -5,6 +5,48 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+function SimpleHeader() {
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 max-w-screen-2xl items-center">
+        <div className="mr-4 flex">
+          <Link href="/" className="mr-6 flex items-center space-x-2">
+            <span className="font-bold text-xl">DecisionAI</span>
+          </Link>
+        </div>
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <nav className="flex items-center space-x-6">
+            <Link href="/" className="text-sm font-medium hover:text-accent">
+              Accueil
+            </Link>
+            <Link href="/fonctionnalites" className="text-sm font-medium hover:text-accent">
+              Fonctionnalités
+            </Link>
+            <Link href="/methode" className="text-sm font-medium hover:text-accent">
+              Méthode
+            </Link>
+            <Link href="/temoignages" className="text-sm font-medium text-accent">
+              Témoignages
+            </Link>
+          </nav>
+          <div className="flex items-center space-x-2">
+            <Link href="/auth/login">
+              <Button variant="ghost" size="sm">
+                Connexion
+              </Button>
+            </Link>
+            <Link href="/demo">
+              <Button size="sm" className="bg-accent hover:bg-accent/90">
+                Démo
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}
+
 const testimonials = [
   {
     name: "Marie Dubois",
@@ -83,6 +125,8 @@ const companies = [
 export default function TestimonialsPage() {
   return (
     <div className="min-h-screen bg-background">
+      <SimpleHeader />
+
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-background to-primary/5" />
