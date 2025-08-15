@@ -32,6 +32,15 @@ export async function updateSession(request: NextRequest) {
     (route) => request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith(route),
   )
 
+  const protectedRoutes = ["/app"]
+  const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
+
+  if (!user && isProtectedRoute) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/auth/login"
+    return NextResponse.redirect(url)
+  }
+
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = "/auth/login"
