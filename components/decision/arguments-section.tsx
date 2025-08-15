@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash2, Sparkles } from "lucide-react"
-import { useRef, useEffect } from "react"
+import { Plus, Trash2, Sparkles, Edit2, Check, X } from "lucide-react"
+import { useRef, useEffect, useState } from "react"
 import type { Argument, AISuggestion } from "@/types/decision"
 
 interface ArgumentsSectionProps {
@@ -37,6 +37,9 @@ export function ArgumentsSection({
   onAddSuggestion,
 }: ArgumentsSectionProps) {
   const sliderRef = useRef<HTMLDivElement>(null)
+  const [editingArgument, setEditingArgument] = useState<string | null>(null)
+  const [editingText, setEditingText] = useState("")
+  const [editingSuggestions, setEditingSuggestions] = useState<{ [key: number]: { text: string; weight: number } }>({})
 
   const ratings = Array.from({ length: 21 }, (_, i) => i - 10)
 
@@ -62,6 +65,63 @@ export function ArgumentsSection({
     if (weight < 0) return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
     if (weight > 0) return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
     return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+  }
+
+  const startEditingArgument = (argument: Argument) => {
+    setEditingArgument(argument.id)
+    setEditingText(argument.text)
+  }
+
+  const saveArgumentEdit = (argumentId: string) => {
+    if (editingText.trim()) {
+      // Update argument text (we'll need to add this to the parent component)
+      onUpdateArgumentWeight(argumentId, sortedArguments.find((a) => a.id === argumentId)?.weight || 0)
+    }
+    setEditingArgument(null)
+    setEditingText("")
+  }
+
+  const cancelArgumentEdit = () => {
+    setEditingArgument(null)
+    setEditingText("")
+  }
+
+  const startEditingSuggestion = (index: number, suggestion: AISuggestion) => {
+    setEditingSuggestions((prev) => ({
+      ...prev,
+      [index]: { text: suggestion.text, weight: suggestion.weight },
+    }))
+  }
+
+  const updateSuggestionEdit = (index: number, field: "text" | "weight", value: string | number) => {
+    setEditingSuggestions((prev) => ({
+      ...prev,
+      [index]: { ...prev[index], [field]: value },
+    }))
+  }
+
+  const saveSuggestionEdit = (index: number, originalSuggestion: AISuggestion) => {
+    const edited = editingSuggestions[index]
+    if (edited && edited.text.trim()) {
+      onAddSuggestion({
+        ...originalSuggestion,
+        text: edited.text,
+        weight: edited.weight,
+      })
+    }
+    setEditingSuggestions((prev) => {
+      const newState = { ...prev }
+      delete newState[index]
+      return newState
+    })
+  }
+
+  const cancelSuggestionEdit = (index: number) => {
+    setEditingSuggestions((prev) => {
+      const newState = { ...prev }
+      delete newState[index]
+      return newState
+    })
   }
 
   // Center slider on selected value
@@ -95,11 +155,7 @@ export function ArgumentsSection({
 
           <div className="space-y-2">
             <Label>Note (-10 à +10)</Label>
-            <div
-              ref={sliderRef}
-              className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
+            <div ref={sliderRef} className="flex gap-1 overflow-x-auto pb-2">
               {ratings.map((rating) => (
                 <button
                   key={rating}
@@ -147,21 +203,62 @@ export function ArgumentsSection({
               <div className="space-y-3">
                 {aiSuggestions.map((suggestion, index) => (
                   <div key={index} className="p-4 border rounded-lg bg-muted/50 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <p className="font-medium">{suggestion.text}</p>
-                        <p className="text-sm text-muted-foreground mt-1">{suggestion.reasoning}</p>
+                    {editingSuggestions[index] ? (
+                      <div className="space-y-3">
+                        <Textarea
+                          value={editingSuggestions[index].text}
+                          onChange={(e) => updateSuggestionEdit(index, "text", e.target.value)}
+                          rows={2}
+                          className="w-full"
+                        />
+                        <div className="flex items-center gap-2">
+                          <Label className="text-sm">Note:</Label>
+                          <div className="flex gap-1 overflow-x-auto">
+                            {ratings.slice(0, 11).map((rating) => (
+                              <button
+                                key={rating}
+                                onClick={() => updateSuggestionEdit(index, "weight", rating)}
+                                className={`
+                                  w-8 h-8 rounded text-xs font-medium transition-all duration-200 flex-shrink-0
+                                  ${getGradient(rating)}
+                                  ${editingSuggestions[index].weight === rating ? "ring-2 ring-primary scale-110" : "hover:scale-105"}
+                                `}
+                              >
+                                {rating}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => saveSuggestionEdit(index, suggestion)}>
+                            <Check className="w-3 h-3 mr-1" />
+                            Ajouter
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => cancelSuggestionEdit(index)}>
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getBadgeColor(suggestion.weight)}>
-                          {suggestion.weight > 0 ? "+" : ""}
-                          {suggestion.weight}
-                        </Badge>
-                        <Button size="sm" onClick={() => onAddSuggestion(suggestion)}>
-                          <Plus className="w-3 h-3" />
-                        </Button>
+                    ) : (
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <p className="font-medium">{suggestion.text}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{suggestion.reasoning}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getBadgeColor(suggestion.weight)}>
+                            {suggestion.weight > 0 ? "+" : ""}
+                            {suggestion.weight}
+                          </Badge>
+                          <Button size="sm" variant="ghost" onClick={() => startEditingSuggestion(index, suggestion)}>
+                            <Edit2 className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" onClick={() => onAddSuggestion(suggestion)}>
+                            <Plus className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -182,20 +279,43 @@ export function ArgumentsSection({
             <div className="space-y-3">
               {sortedArguments.map((argument) => (
                 <div key={argument.id} className={`p-4 border rounded-lg ${getArgumentColor(argument.weight)}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <p className="font-medium">{argument.text}</p>
+                  {editingArgument === argument.id ? (
+                    <div className="space-y-3">
+                      <Textarea
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        rows={2}
+                        className="w-full"
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => saveArgumentEdit(argument.id)}>
+                          <Check className="w-3 h-3 mr-1" />
+                          Sauvegarder
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={cancelArgumentEdit}>
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={getBadgeColor(argument.weight)}>
-                        {argument.weight > 0 ? "+" : ""}
-                        {argument.weight}
-                      </Badge>
-                      <Button size="sm" variant="ghost" onClick={() => onRemoveArgument(argument.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                  ) : (
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="font-medium">{argument.text}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getBadgeColor(argument.weight)}>
+                          {argument.weight > 0 ? "+" : ""}
+                          {argument.weight}
+                        </Badge>
+                        <Button size="sm" variant="ghost" onClick={() => startEditingArgument(argument)}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => onRemoveArgument(argument.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
