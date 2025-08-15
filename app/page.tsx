@@ -3,8 +3,31 @@
 import { ArrowRight, BarChart3, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 
 export default function LandingPage() {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -27,17 +50,33 @@ export default function LandingPage() {
               <a href="#temoignages" className="text-muted-foreground hover:text-foreground transition-colors">
                 Témoignages
               </a>
-              <Link href="/auth/login">
-                <Button variant="outline" size="sm">
-                  Se connecter
-                </Button>
-              </Link>
-              <Link href="/auth/sign-up">
-                <Button size="sm">
-                  Commencer
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
+              {loading ? (
+                <div className="flex space-x-2">
+                  <div className="w-20 h-8 bg-muted animate-pulse rounded"></div>
+                  <div className="w-24 h-8 bg-muted animate-pulse rounded"></div>
+                </div>
+              ) : user ? (
+                <Link href="/app">
+                  <Button size="sm">
+                    Accéder à l'application
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/auth/login">
+                    <Button variant="outline" size="sm">
+                      Se connecter
+                    </Button>
+                  </Link>
+                  <Link href="/auth/sign-up">
+                    <Button size="sm">
+                      Commencer
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         </div>
@@ -60,17 +99,40 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/auth/sign-up">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Commencer gratuitement
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-                <Link href="/app">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
-                    Voir la démo
-                  </Button>
-                </Link>
+                {loading ? (
+                  <div className="flex space-x-4">
+                    <div className="w-48 h-12 bg-muted animate-pulse rounded"></div>
+                    <div className="w-32 h-12 bg-muted animate-pulse rounded"></div>
+                  </div>
+                ) : user ? (
+                  <>
+                    <Link href="/app">
+                      <Button size="lg" className="w-full sm:w-auto">
+                        Accéder à l'application
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </Link>
+                    <Link href="/app">
+                      <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
+                        Nouvelle analyse
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/auth/sign-up">
+                      <Button size="lg" className="w-full sm:w-auto">
+                        Commencer gratuitement
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </Link>
+                    <Link href="/app">
+                      <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
+                        Voir la démo
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
               <div className="flex items-center space-x-6 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-2">
@@ -88,7 +150,6 @@ export default function LandingPage() {
                 <div className="space-y-6">
                   <div className="text-center">
                     <h3 className="text-lg font-semibold text-card-foreground mb-4">Analyse de Décision</h3>
-                    {/* Semi-circular gauge visualization */}
                     <div className="relative w-64 h-32 mx-auto">
                       <svg viewBox="0 0 200 100" className="w-full h-full">
                         <defs>
@@ -346,9 +407,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ... existing sections ... */}
+      {/* Testimonials Section */}
       <section id="temoignages" className="py-20">
-        {/* ... existing testimonials content ... */}
+        {/* Testimonials content here */}
       </section>
 
       {/* CTA Section */}
@@ -363,27 +424,52 @@ export default function LandingPage() {
               décisions.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/sign-up">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                  Commencer maintenant
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Link href="/app">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
-                >
-                  Essayer la démo
-                </Button>
-              </Link>
+              {loading ? (
+                <div className="flex space-x-4 justify-center">
+                  <div className="w-40 h-12 bg-primary-foreground/20 animate-pulse rounded"></div>
+                  <div className="w-32 h-12 bg-primary-foreground/20 animate-pulse rounded"></div>
+                </div>
+              ) : user ? (
+                <>
+                  <Link href="/app">
+                    <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                      Accéder à l'application
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link href="/app">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
+                    >
+                      Nouvelle analyse
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/sign-up">
+                    <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                      Commencer maintenant
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link href="/app">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
+                    >
+                      Essayer la démo
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
       </section>
-
-      {/* ... existing footer ... */}
     </div>
   )
 }
