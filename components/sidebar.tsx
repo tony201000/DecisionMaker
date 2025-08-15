@@ -27,12 +27,13 @@ interface SidebarProps {
   onToggle: () => void
   isDarkMode: boolean
   onToggleDarkMode: () => void
+  onLoadDecision?: (decisionId: string) => Promise<void>
 }
 
-export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: SidebarProps) {
+export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoadDecision }: SidebarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const { savedDecisions, loadDecision, currentDecision, getRecentDecisions } = useDecision()
+  const { savedDecisions, loadDecision, currentDecision, getRecentDecisions, loadDecisionHistory } = useDecision()
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -43,19 +44,27 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
       } = await supabase.auth.getSession()
       setUser(user)
       setLoading(false)
+
+      if (user) {
+        await loadDecisionHistory(user)
+      }
     }
 
     getUser()
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null)
       setLoading(false)
+
+      if (session?.user) {
+        await loadDecisionHistory(session.user)
+      }
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase]) // Include memoized supabase in deps
+  }, [supabase, loadDecisionHistory]) // Include memoized supabase in deps
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -71,7 +80,11 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
   }
 
   const handleDecisionSelect = async (decisionId: string) => {
-    await loadDecision(decisionId)
+    if (onLoadDecision) {
+      await onLoadDecision(decisionId)
+    } else {
+      await loadDecision(decisionId)
+    }
     onToggle() // Close sidebar on mobile after selection
   }
 

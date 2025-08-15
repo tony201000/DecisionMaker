@@ -43,7 +43,22 @@ export default function DecisionMakerPlatform() {
     generateSuggestions,
     addSuggestionAsArgument,
     createNewDecision,
+    loadDecision,
+    loadDecisionHistory,
   } = useDecision()
+
+  useEffect(() => {
+    if (user) {
+      loadDecisionHistory(user)
+    }
+  }, [user, loadDecisionHistory])
+
+  const handleLoadDecision = async (decisionId: string) => {
+    const loadedArgs = await loadDecision(decisionId, setArgs)
+    if (loadedArgs) {
+      setArgs(loadedArgs)
+    }
+  }
 
   useEffect(() => {
     setIsMounted(true)
@@ -82,6 +97,7 @@ export default function DecisionMakerPlatform() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        onLoadDecision={handleLoadDecision}
       />
 
       <div className={`transition-all duration-300 ${sidebarOpen ? "ml-80" : "ml-0"}`}>
