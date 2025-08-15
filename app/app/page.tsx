@@ -1,7 +1,7 @@
 "use client"
 
 import { Menu } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { ArgumentsSection } from "@/components/decision/arguments-section"
 import { DecisionHeader } from "@/components/decision/decision-header"
 import { ResultsSection } from "@/components/decision/results-section"
@@ -11,7 +11,7 @@ import { useArguments } from "@/hooks/use-arguments"
 import { useAuth } from "@/hooks/use-auth"
 import { useDecision } from "@/hooks/use-decision"
 import type { AISuggestion } from "@/types/decision"
-import { debounce } from "lodash"
+import debounce from "lodash.debounce"
 
 export default function DecisionMakerPlatform() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -77,15 +77,22 @@ export default function DecisionMakerPlatform() {
     }
   }, [isDarkMode, isMounted])
 
-  const debouncedAutoSaveDecision = debounce((user, currentDecision, args) => {
-    autoSaveDecision(user, currentDecision, args)
-  }, 1000)
+  const debouncedAutoSaveDecision = useMemo(
+    () =>
+      debounce((u: typeof user, d: typeof currentDecision, a: typeof args) => {
+        autoSaveDecision(u, d, a)
+      }, 1000),
+    [autoSaveDecision],
+  )
 
   useEffect(() => {
     if (user && currentDecision.title.trim()) {
       debouncedAutoSaveDecision(user, currentDecision, args)
     }
-  }, [args, user, currentDecision])
+    return () => {
+      debouncedAutoSaveDecision.cancel()
+    }
+  }, [args, user, currentDecision, debouncedAutoSaveDecision])
 
   const handleGenerateSuggestions = () => {
     generateSuggestions(args)

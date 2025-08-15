@@ -93,8 +93,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
       if (mounted) {
         const newUser = session?.user ?? null
 
-        // Only update if user actually changed to avoid unnecessary re-renders
-        if (JSON.stringify(user) !== JSON.stringify(newUser)) {
+        if (user?.id !== newUser?.id || (user === null && newUser !== null) || (user !== null && newUser === null)) {
           setUser(newUser)
           setLoading(false)
           setAuthInitialized(true)

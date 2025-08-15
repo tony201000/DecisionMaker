@@ -237,20 +237,28 @@ export function useDecision() {
   }
 
   const updateDecisionTitle = async (user: User | null, title: string, args: Argument[]) => {
-    setCurrentDecision((prev) => ({ ...prev, title }))
+    let updatedDecision: Decision | null = null
+    setCurrentDecision((prev) => {
+      updatedDecision = { ...prev, title }
+      return updatedDecision
+    })
 
     // Auto-save if title is not empty and user is logged in
-    if (user && title.trim()) {
-      await autoSaveDecision(user, { ...currentDecision, title }, args)
+    if (user && title.trim() && updatedDecision) {
+      await autoSaveDecision(user, updatedDecision, args)
     }
   }
 
   const updateDecisionDescription = async (user: User | null, description: string, args: Argument[]) => {
-    setCurrentDecision((prev) => ({ ...prev, description }))
+    let updatedDecision: Decision | null = null
+    setCurrentDecision((prev) => {
+      updatedDecision = { ...prev, description }
+      return updatedDecision
+    })
 
     // Auto-save if we have a title and user is logged in
-    if (user && currentDecision.title.trim()) {
-      await autoSaveDecision(user, { ...currentDecision, description }, args)
+    if (user && (updatedDecision?.title || "").trim() && updatedDecision) {
+      await autoSaveDecision(user, updatedDecision, args)
     }
   }
 
@@ -335,6 +343,7 @@ export function useDecision() {
       // If we're currently viewing this decision, create a new one
       if (currentDecision.id === decisionId) {
         setCurrentDecision({
+          id: "",
           title: "Nouvelle décision",
           description: "",
           arguments: [],
@@ -342,7 +351,7 @@ export function useDecision() {
       }
     } catch (error) {
       console.error("Error deleting decision:", error)
-      alert("Erreur lors de la suppression")
+      console.error("Erreur lors de la suppression")
     }
   }
 

@@ -182,6 +182,10 @@ export default function TestimonialsPage() {
                       src={testimonial.avatar || "/placeholder.svg"}
                       alt={testimonial.name}
                       className="w-12 h-12 rounded-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null
+                        e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(testimonial.name)
+                      }}
                     />
                     <div>
                       <h3 className="font-semibold text-card-foreground">{testimonial.name}</h3>
