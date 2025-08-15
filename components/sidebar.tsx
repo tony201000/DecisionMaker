@@ -21,7 +21,7 @@ import {
   Pin,
 } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useRef } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
