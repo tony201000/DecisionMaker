@@ -2,6 +2,7 @@
 
 import { ArrowRight, Star, Quote, Building, User, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { UnifiedHeader } from "@/components/shared/unified-header"
 
 function SimpleButton({ children, variant = "default", size = "default", className = "", href, ...props }: any) {
   const baseClasses =
@@ -39,44 +40,6 @@ function SimpleButton({ children, variant = "default", size = "default", classNa
 
 function SimpleCard({ children, className = "" }: any) {
   return <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>{children}</div>
-}
-
-function SimpleHeader() {
-  return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center mx-auto px-4">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold text-xl">DecisionAI</span>
-          </Link>
-        </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <nav className="flex items-center space-x-6">
-            <Link href="/" className="text-sm font-medium hover:text-accent">
-              Accueil
-            </Link>
-            <Link href="/fonctionnalites" className="text-sm font-medium hover:text-accent">
-              Fonctionnalités
-            </Link>
-            <Link href="/methode" className="text-sm font-medium hover:text-accent">
-              Méthode
-            </Link>
-            <Link href="/temoignages" className="text-sm font-medium text-accent">
-              Témoignages
-            </Link>
-          </nav>
-          <div className="flex items-center space-x-2">
-            <SimpleButton variant="ghost" size="sm" href="/auth/login">
-              Connexion
-            </SimpleButton>
-            <SimpleButton size="sm" className="bg-accent hover:bg-accent/90" href="/demo">
-              Démo
-            </SimpleButton>
-          </div>
-        </div>
-      </div>
-    </header>
-  )
 }
 
 const testimonials = [
@@ -157,7 +120,7 @@ const companies = [
 export default function TestimonialsPage() {
   return (
     <div className="min-h-screen bg-background">
-      <SimpleHeader />
+      <UnifiedHeader />
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">

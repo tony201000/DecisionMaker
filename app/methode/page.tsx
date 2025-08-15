@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle, Brain, BarChart3, Lightbulb, Target } from "lu
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { UnifiedHeader } from "@/components/shared/unified-header"
 
 const steps = [
   {
@@ -57,6 +58,8 @@ const principles = [
 export default function MethodPage() {
   return (
     <div className="min-h-screen bg-background">
+      <UnifiedHeader />
+
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />

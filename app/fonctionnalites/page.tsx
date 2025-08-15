@@ -4,6 +4,7 @@ import { ArrowRight, Brain, BarChart3, Shield, Smartphone, Users, Clock, Zap, Ta
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { UnifiedHeader } from "@/components/shared/unified-header"
 
 const features = [
   {
@@ -61,6 +62,9 @@ const stats = [
 export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-background">
+      {/* Unified Header */}
+      <UnifiedHeader />
+
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-background to-primary/5" />
