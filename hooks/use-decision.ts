@@ -5,17 +5,6 @@ import { useState, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { AISuggestion, Argument, Decision } from "@/types/decision"
 
-interface SavedDecision {
-  id: string
-  title: string
-  description: string
-  created_at: string
-  arguments: Array<{
-    text: string
-    weight: number
-  }>
-}
-
 export function useDecision() {
   const [currentDecision, setCurrentDecision] = useState<Decision>({
     title: "Nouvelle décision",
@@ -25,7 +14,7 @@ export function useDecision() {
   const [saving, setSaving] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<Array<AISuggestion>>([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
-  const [savedDecisions, setSavedDecisions] = useState<SavedDecision[]>([])
+  const [savedDecisions, setSavedDecisions] = useState<Decision[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
 
   const supabase = useMemo(() => createClient(), [])
