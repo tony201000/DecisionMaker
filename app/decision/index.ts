@@ -1,5 +1,5 @@
-export { AISuggestionsSection } from "./ai-suggestions-section";
-export { ArgumentsSection } from "./arguments-section";
-export { DecisionHeader } from "./decision-header";
-export { RatingSlider } from "./rating-slider";
-export { ResultsSection } from "./results-section";
+export { AISuggestionsSection } from "./ai-suggestions-section"
+export { ArgumentsSection } from "./arguments-section"
+export { DecisionHeader } from "./decision-header"
+export { RatingSlider } from "./rating-slider"
+export { ResultsSection } from "./results-section"

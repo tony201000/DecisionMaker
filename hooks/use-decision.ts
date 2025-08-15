@@ -1,16 +1,18 @@
 "use client"
 
 import type { User } from "@supabase/supabase-js"
-import { useState, useMemo, useCallback } from "react"
-import { createClient } from "@/lib/supabase/client"
-import type { AISuggestion, Argument, Decision, SavedDecision } from "@/types/decision"
+import { useCallback, useMemo, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { createClient } from "@/lib/supabase/client"
+import type { AISuggestion, Argument, Decision } from "@/types/decision"
 
 export function useDecision() {
   const [currentDecision, setCurrentDecision] = useState<Decision>({
-    title: "Nouvelle décision",
-    description: "",
     arguments: [],
+    createdAt: new Date(),
+    description: "",
+    title: "Nouvelle décision",
+    updatedAt: new Date()
   })
   const [saving, setSaving] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<Array<AISuggestion>>([])
@@ -44,31 +46,50 @@ export function useDecision() {
 
         if (error) throw error
 
-        setSavedDecisions(decisions || [])
+        // Transform the data to match our Decision type
+        const transformedDecisions = (decisions || []).map(
+          (decision: {
+            id: string
+            title: string
+            description?: string
+            created_at: string
+            updated_at?: string
+            arguments: Array<{ text: string; weight: number }>
+          }) => ({
+            arguments: decision.arguments || [],
+            createdAt: decision.created_at ? new Date(decision.created_at) : new Date(),
+            description: decision.description || "",
+            id: decision.id, // Ensure id is always present
+            title: decision.title || "Décision sans titre",
+            updatedAt: decision.updated_at ? new Date(decision.updated_at) : new Date()
+          })
+        )
+
+        setSavedDecisions(transformedDecisions)
       } catch (error) {
         console.error("Error loading decision history:", error)
         addToast({
-          title: "Erreur",
           description: "Erreur lors du chargement de l'historique",
-          variant: "destructive",
+          title: "Erreur",
+          variant: "destructive"
         })
       } finally {
         setLoadingHistory(false)
       }
     },
-    [supabase, addToast],
+    [supabase, addToast]
   )
 
-  const loadDecision = async (decisionIdOrObject: string | SavedDecision, setArgs?: (args: Argument[]) => void) => {
+  const loadDecision = async (decisionIdOrObject: string | Decision, setArgs?: (args: Argument[]) => void) => {
     try {
-      let savedDecision: SavedDecision
+      let savedDecision: Decision
 
-      // Handle both ID string and SavedDecision object
+      // Handle both ID string and Decision object
       if (typeof decisionIdOrObject === "string") {
         const decisionId = decisionIdOrObject
 
         // First try to find in savedDecisions cache
-        const cachedDecision = (savedDecisions || []).find((d) => d.id === decisionId)
+        const cachedDecision = (savedDecisions || []).find(d => d.id === decisionId)
         if (cachedDecision) {
           savedDecision = cachedDecision
         } else {
@@ -91,9 +112,9 @@ export function useDecision() {
           if (error) {
             console.error("Error loading decision by ID:", error)
             addToast({
-              title: "Erreur",
               description: "Erreur lors du chargement de la décision",
-              variant: "destructive",
+              title: "Erreur",
+              variant: "destructive"
             })
             return
           }
@@ -101,9 +122,9 @@ export function useDecision() {
           if (!data) {
             console.error("Decision not found:", decisionId)
             addToast({
-              title: "Erreur",
               description: "Décision introuvable",
-              variant: "destructive",
+              title: "Erreur",
+              variant: "destructive"
             })
             return
           }
@@ -116,10 +137,12 @@ export function useDecision() {
 
       // Update current decision
       setCurrentDecision({
+        arguments: [],
+        createdAt: savedDecision.createdAt || new Date(),
+        description: savedDecision.description || "",
         id: savedDecision.id,
         title: savedDecision.title || "Décision sans titre",
-        description: savedDecision.description || "",
-        arguments: [],
+        updatedAt: savedDecision.updatedAt || new Date()
       })
 
       // Convert saved arguments to current format with null safety
@@ -127,7 +150,7 @@ export function useDecision() {
       const loadedArgs: Argument[] = argumentsArray.map((arg, index) => ({
         id: `${savedDecision.id}-${index}`,
         text: arg?.text || "",
-        weight: arg?.weight || 0,
+        weight: arg?.weight || 0
       }))
 
       // Call setArgs if provided (for backward compatibility)
@@ -139,18 +162,18 @@ export function useDecision() {
     } catch (error) {
       console.error("Error in loadDecision:", error)
       addToast({
-        title: "Erreur",
         description: "Erreur lors du chargement de la décision",
-        variant: "destructive",
+        title: "Erreur",
+        variant: "destructive"
       })
     }
   }
 
   const createNewDecision = (clearArgs: () => void) => {
     setCurrentDecision({
-      title: "Nouvelle décision",
-      description: "",
       arguments: [],
+      description: "",
+      title: "Nouvelle décision"
     })
     clearArgs()
     setAiSuggestions([])
@@ -159,18 +182,18 @@ export function useDecision() {
   const saveDecision = async (user: User | null, args: Argument[]) => {
     if (!user) {
       addToast({
-        title: "Connexion requise",
         description: "Vous devez être connecté pour sauvegarder une décision",
-        variant: "destructive",
+        title: "Connexion requise",
+        variant: "destructive"
       })
       return
     }
 
     if (!currentDecision.title.trim()) {
       addToast({
-        title: "Titre requis",
         description: "Veuillez donner un titre à votre décision",
-        variant: "destructive",
+        title: "Titre requis",
+        variant: "destructive"
       })
       return
     }
@@ -181,9 +204,9 @@ export function useDecision() {
       const { data: decisionData, error: decisionError } = await supabase
         .from("decisions")
         .insert({
-          user_id: user.id,
-          title: currentDecision.title,
           description: currentDecision.description,
+          title: currentDecision.title,
+          user_id: user.id
         })
         .select()
         .single()
@@ -192,10 +215,10 @@ export function useDecision() {
 
       // Save arguments
       if (args.length > 0) {
-        const argumentsToInsert = args.map((arg) => ({
+        const argumentsToInsert = args.map(arg => ({
           decision_id: decisionData.id,
           text: arg.text,
-          weight: arg.weight,
+          weight: arg.weight
         }))
 
         const { error: argumentsError } = await supabase.from("arguments").insert(argumentsToInsert)
@@ -203,19 +226,19 @@ export function useDecision() {
         if (argumentsError) throw argumentsError
       }
 
-      setCurrentDecision((prev) => ({ ...prev, id: decisionData.id }))
+      setCurrentDecision(prev => ({ ...prev, id: decisionData.id }))
       await loadDecisionHistory(user)
       addToast({
-        title: "Succès",
         description: "Décision sauvegardée avec succès !",
-        variant: "success",
+        title: "Succès",
+        variant: "success"
       })
     } catch (error) {
       console.error("Error saving decision:", error)
       addToast({
-        title: "Erreur",
         description: "Erreur lors de la sauvegarde",
-        variant: "destructive",
+        title: "Erreur",
+        variant: "destructive"
       })
     } finally {
       setSaving(false)
@@ -225,9 +248,9 @@ export function useDecision() {
   const generateSuggestions = async (args: Argument[]) => {
     if (!currentDecision.title.trim()) {
       addToast({
-        title: "Titre requis",
         description: "Veuillez d'abord donner un titre à votre décision",
-        variant: "destructive",
+        title: "Titre requis",
+        variant: "destructive"
       })
       return
     }
@@ -235,15 +258,15 @@ export function useDecision() {
     setLoadingSuggestions(true)
     try {
       const response = await fetch("/api/suggest-arguments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
-          title: currentDecision.title,
           description: currentDecision.description,
           existingArguments: args,
+          title: currentDecision.title
         }),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        method: "POST"
       })
 
       if (!response.ok) {
@@ -255,9 +278,9 @@ export function useDecision() {
     } catch (error) {
       console.error("Error generating suggestions:", error)
       addToast({
-        title: "Erreur",
         description: "Erreur lors de la génération des suggestions",
-        variant: "destructive",
+        title: "Erreur",
+        variant: "destructive"
       })
     } finally {
       setLoadingSuggestions(false)
@@ -266,13 +289,13 @@ export function useDecision() {
 
   const addSuggestionAsArgument = (suggestion: AISuggestion, addArgumentToList: (arg: Argument) => void) => {
     const argument: Argument = {
-      id: Date.now().toString(),
+      id: `suggestion-${suggestion.text}-${Date.now()}`,
       text: suggestion.text,
-      weight: suggestion.weight,
+      weight: suggestion.weight
     }
     addArgumentToList(argument)
     // Remove the suggestion from the list
-    setAiSuggestions((prev) => prev.filter((s) => s.text !== suggestion.text))
+    setAiSuggestions(prev => prev.filter(s => s.text !== suggestion.text))
   }
 
   const getRecentDecisions = (count = 10) => {
@@ -282,27 +305,21 @@ export function useDecision() {
   }
 
   const updateDecisionTitle = async (user: User | null, title: string, args: Argument[]) => {
-    let updatedDecision: Decision | null = null
-    setCurrentDecision((prev) => {
-      updatedDecision = { ...prev, title }
-      return updatedDecision
-    })
+    const updatedDecision = { ...currentDecision, title }
+    setCurrentDecision(updatedDecision)
 
     // Auto-save if title is not empty and user is logged in
-    if (user && title.trim() && updatedDecision) {
+    if (user && title.trim()) {
       await autoSaveDecision(user, updatedDecision, args)
     }
   }
 
   const updateDecisionDescription = async (user: User | null, description: string, args: Argument[]) => {
-    let updatedDecision: Decision | null = null
-    setCurrentDecision((prev) => {
-      updatedDecision = { ...prev, description }
-      return updatedDecision
-    })
+    const updatedDecision = { ...currentDecision, description }
+    setCurrentDecision(updatedDecision)
 
     // Auto-save if we have a title and user is logged in
-    if (user && (updatedDecision?.title || "").trim() && updatedDecision) {
+    if (user && updatedDecision.title.trim()) {
       await autoSaveDecision(user, updatedDecision, args)
     }
   }
@@ -316,8 +333,8 @@ export function useDecision() {
         const { error: decisionError } = await supabase
           .from("decisions")
           .update({
-            title: decision.title,
             description: decision.description,
+            title: decision.title
           })
           .eq("id", decision.id)
 
@@ -327,10 +344,10 @@ export function useDecision() {
         await supabase.from("arguments").delete().eq("decision_id", decision.id)
 
         if (args.length > 0) {
-          const argumentsToInsert = args.map((arg) => ({
+          const argumentsToInsert = args.map(arg => ({
             decision_id: decision.id,
             text: arg.text,
-            weight: arg.weight,
+            weight: arg.weight
           }))
 
           const { error: argumentsError } = await supabase.from("arguments").insert(argumentsToInsert)
@@ -341,9 +358,9 @@ export function useDecision() {
         const { data: decisionData, error: decisionError } = await supabase
           .from("decisions")
           .insert({
-            user_id: user.id,
-            title: decision.title,
             description: decision.description,
+            title: decision.title,
+            user_id: user.id
           })
           .select()
           .single()
@@ -352,17 +369,17 @@ export function useDecision() {
 
         // Save arguments
         if (args.length > 0) {
-          const argumentsToInsert = args.map((arg) => ({
+          const argumentsToInsert = args.map(arg => ({
             decision_id: decisionData.id,
             text: arg.text,
-            weight: arg.weight,
+            weight: arg.weight
           }))
 
           const { error: argumentsError } = await supabase.from("arguments").insert(argumentsToInsert)
           if (argumentsError) throw argumentsError
         }
 
-        setCurrentDecision((prev) => ({ ...prev, id: decisionData.id }))
+        setCurrentDecision(prev => ({ ...prev, id: decisionData.id }))
       }
 
       // The sidebar will refresh its data when needed through other mechanisms
@@ -376,11 +393,17 @@ export function useDecision() {
 
     try {
       // Delete arguments first (foreign key constraint)
-      await supabase.from("arguments").delete().eq("decision_id", decisionId)
+      const { error: argsError } = await supabase.from("arguments").delete().eq("decision_id", decisionId)
+      if (argsError) {
+        console.error("Error deleting arguments:", argsError)
+      }
 
       // Delete decision
       const { error } = await supabase.from("decisions").delete().eq("id", decisionId)
-      if (error) throw error
+      if (error) {
+        console.error("Error deleting decision:", error)
+        throw error
+      }
 
       // Refresh history
       await loadDecisionHistory(user)
@@ -388,24 +411,24 @@ export function useDecision() {
       // If we're currently viewing this decision, create a new one
       if (currentDecision.id === decisionId) {
         setCurrentDecision({
-          id: "",
-          title: "Nouvelle décision",
-          description: "",
           arguments: [],
+          description: "",
+          id: "",
+          title: "Nouvelle décision"
         })
       }
 
       addToast({
-        title: "Succès",
         description: "Décision supprimée avec succès",
-        variant: "success",
+        title: "Succès",
+        variant: "success"
       })
     } catch (error) {
       console.error("Error deleting decision:", error)
       addToast({
-        title: "Erreur",
         description: "Erreur lors de la suppression",
-        variant: "destructive",
+        title: "Erreur",
+        variant: "destructive"
       })
     }
   }
@@ -416,11 +439,14 @@ export function useDecision() {
     try {
       const { error } = await supabase.from("decisions").update({ title: newTitle.trim() }).eq("id", decisionId)
 
-      if (error) throw error
+      if (error) {
+        console.error("Error updating decision:", error)
+        throw error
+      }
 
       // Update current decision if it's the one being renamed
       if (currentDecision.id === decisionId) {
-        setCurrentDecision((prev) => ({ ...prev, title: newTitle.trim() }))
+        setCurrentDecision(prev => ({ ...prev, title: newTitle.trim() }))
       }
 
       // Refresh history
@@ -428,9 +454,9 @@ export function useDecision() {
     } catch (error) {
       console.error("Error renaming decision:", error)
       addToast({
-        title: "Erreur",
         description: "Erreur lors du renommage",
-        variant: "destructive",
+        title: "Erreur",
+        variant: "destructive"
       })
     }
   }
@@ -440,45 +466,45 @@ export function useDecision() {
 
     try {
       // Update the decision with current timestamp to move it to top
-      const { error } = await supabase
-        .from("decisions")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("id", decisionId)
+      const { error } = await supabase.from("decisions").update({ updated_at: new Date().toISOString() }).eq("id", decisionId)
 
-      if (error) throw error
+      if (error) {
+        console.error("Error updating decision:", error)
+        throw error
+      }
 
       // Refresh history
       await loadDecisionHistory(user)
     } catch (error) {
       console.error("Error pinning decision:", error)
       addToast({
-        title: "Erreur",
         description: "Erreur lors de l'épinglage",
-        variant: "destructive",
+        title: "Erreur",
+        variant: "destructive"
       })
     }
   }
 
   return {
-    currentDecision,
-    setCurrentDecision,
-    saving,
-    aiSuggestions,
-    loadingSuggestions,
-    savedDecisions,
-    loadingHistory,
-    saveDecision,
-    generateSuggestions,
     addSuggestionAsArgument,
-    loadDecisionHistory,
-    loadDecision,
-    createNewDecision,
-    getRecentDecisions, // Export safe recent decisions getter
-    updateDecisionTitle,
-    updateDecisionDescription,
+    aiSuggestions,
     autoSaveDecision,
+    createNewDecision,
+    currentDecision,
     deleteDecision,
-    renameDecision,
+    generateSuggestions,
+    getRecentDecisions, // Export safe recent decisions getter
+    loadDecision,
+    loadDecisionHistory,
+    loadingHistory,
+    loadingSuggestions,
     pinDecision,
+    renameDecision,
+    saveDecision,
+    savedDecisions,
+    saving,
+    setCurrentDecision,
+    updateDecisionDescription,
+    updateDecisionTitle
   }
 }

@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { ArrowLeft, Calendar, FileText, Minus, Search, TrendingDown, TrendingUp } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, FileText, Search, Calendar, TrendingUp, TrendingDown, Minus } from "lucide-react"
-import { useDecision } from "@/hooks/use-decision"
 import { useAuth } from "@/hooks/use-auth"
+import { useDecision } from "@/hooks/use-decision"
 import { createClient } from "@/lib/supabase/client"
 import type { Decision } from "@/types/decision"
 
@@ -58,9 +58,9 @@ export default function HistoryPage() {
 
   useEffect(() => {
     const filtered = (decisions || []).filter(
-      (decision) =>
+      decision =>
         (decision.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (decision.description || "").toLowerCase().includes(searchTerm.toLowerCase()),
+        (decision.description || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
     setFilteredDecisions(filtered)
     setCurrentPage(1)
@@ -73,16 +73,12 @@ export default function HistoryPage() {
 
   const getDecisionStats = (decision: Decision) => {
     const argumentsArray = decision.arguments || []
-    const positiveScore = argumentsArray
-      .filter((arg) => arg?.weight > 0)
-      .reduce((sum, arg) => sum + (arg?.weight || 0), 0)
-    const negativeScore = Math.abs(
-      argumentsArray.filter((arg) => arg?.weight < 0).reduce((sum, arg) => sum + (arg?.weight || 0), 0),
-    )
+    const positiveScore = argumentsArray.filter(arg => arg?.weight > 0).reduce((sum, arg) => sum + (arg?.weight || 0), 0)
+    const negativeScore = Math.abs(argumentsArray.filter(arg => arg?.weight < 0).reduce((sum, arg) => sum + (arg?.weight || 0), 0))
     const ratio = negativeScore > 0 ? positiveScore / negativeScore : positiveScore > 0 ? Number.POSITIVE_INFINITY : 1
     const recommendation = ratio >= 2 ? "Favorable" : ratio <= 0.5 ? "Défavorable" : "Mitigé"
 
-    return { positiveScore, negativeScore, recommendation, ratio }
+    return { negativeScore, positiveScore, ratio, recommendation }
   }
 
   const getRecommendationIcon = (recommendation: string) => {
@@ -125,7 +121,12 @@ export default function HistoryPage() {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="outline" size="sm" onClick={() => router.push("/app")} className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/app")}
+            className="flex items-center gap-2"
+          >
             <ArrowLeft className="w-4 h-4" />
             Retour
           </Button>
@@ -143,7 +144,7 @@ export default function HistoryPage() {
           <Input
             placeholder="Rechercher dans vos décisions..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -152,13 +153,13 @@ export default function HistoryPage() {
         {paginatedDecisions.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {paginatedDecisions.map((decision) => {
+              {paginatedDecisions.map(decision => {
                 const stats = getDecisionStats(decision)
                 return (
                   <Card
                     key={decision.id}
                     className="cursor-pointer hover:shadow-lg transition-shadow border-border hover:border-primary/20"
-                    onClick={() => handleDecisionSelect(decision.id)}
+                    onClick={() => decision.id && handleDecisionSelect(decision.id)}
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-2">
@@ -170,14 +171,10 @@ export default function HistoryPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {decision.description || "Aucune description"}
-                      </p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{decision.description || "Aucune description"}</p>
 
                       <div className="flex items-center justify-between">
-                        <Badge className={`${getRecommendationColor(stats.recommendation)} border-0`}>
-                          {stats.recommendation}
-                        </Badge>
+                        <Badge className={`${getRecommendationColor(stats.recommendation)} border-0`}>{stats.recommendation}</Badge>
                         <div className="text-sm text-muted-foreground">
                           {stats.positiveScore}:{stats.negativeScore}
                         </div>
@@ -186,10 +183,11 @@ export default function HistoryPage() {
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {new Date(decision.updated_at).toLocaleDateString("fr-FR")}
+                          {new Date(decision.updatedAt ?? "").toLocaleDateString("fr-FR")}
                         </div>
                         <div>
-                          {(decision.arguments || []).length} argument{(decision.arguments || []).length > 1 ? "s" : ""}
+                          {(decision.arguments || []).length} argument
+                          {(decision.arguments || []).length > 1 ? "s" : ""}
                         </div>
                       </div>
                     </CardContent>
@@ -204,7 +202,7 @@ export default function HistoryPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 >
                   Précédent
@@ -215,7 +213,7 @@ export default function HistoryPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 >
                   Suivant
@@ -227,9 +225,7 @@ export default function HistoryPage() {
           <Card className="text-center py-12">
             <CardContent>
               <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">
-                {searchTerm ? "Aucune décision trouvée" : "Aucune décision sauvegardée"}
-              </h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">{searchTerm ? "Aucune décision trouvée" : "Aucune décision sauvegardée"}</h3>
               <p className="text-muted-foreground mb-4">
                 {searchTerm ? "Essayez avec d'autres mots-clés" : "Commencez par créer votre première décision"}
               </p>

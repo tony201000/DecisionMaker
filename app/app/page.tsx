@@ -1,7 +1,8 @@
 "use client"
 
+import debounce from "lodash.debounce"
 import { Menu } from "lucide-react"
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ArgumentsSection } from "@/components/decision/arguments-section"
 import { DecisionHeader } from "@/components/decision/decision-header"
 import { ResultsSection } from "@/components/decision/results-section"
@@ -11,7 +12,6 @@ import { useArguments } from "@/hooks/use-arguments"
 import { useAuth } from "@/hooks/use-auth"
 import { useDecision } from "@/hooks/use-decision"
 import type { AISuggestion } from "@/types/decision"
-import debounce from "lodash.debounce"
 
 export default function DecisionMakerPlatform() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -31,12 +31,11 @@ export default function DecisionMakerPlatform() {
     negativeScore,
     sortedArguments,
     setArgs,
-    clearArgs,
+    clearArgs
   } = useArguments()
 
   const {
     currentDecision,
-    setCurrentDecision,
     saving,
     aiSuggestions,
     loadingSuggestions,
@@ -47,7 +46,7 @@ export default function DecisionMakerPlatform() {
     loadDecisionHistory,
     updateDecisionTitle,
     updateDecisionDescription,
-    autoSaveDecision,
+    autoSaveDecision
   } = useDecision()
 
   useEffect(() => {
@@ -82,7 +81,7 @@ export default function DecisionMakerPlatform() {
       debounce((u: typeof user, d: typeof currentDecision, a: typeof args) => {
         autoSaveDecision(u, d, a)
       }, 1000),
-    [autoSaveDecision],
+    [autoSaveDecision]
   )
 
   useEffect(() => {
@@ -156,7 +155,11 @@ export default function DecisionMakerPlatform() {
             />
 
             {/* Section Résultats */}
-            <ResultsSection positiveScore={positiveScore} negativeScore={negativeScore} argumentsCount={args.length} />
+            <ResultsSection
+              positiveScore={positiveScore}
+              negativeScore={negativeScore}
+              argumentsCount={args.length}
+            />
 
             {/* Section Arguments */}
             <ArgumentsSection
@@ -166,6 +169,7 @@ export default function DecisionMakerPlatform() {
               sortedArguments={sortedArguments}
               onRemoveArgument={removeArgument}
               onUpdateArgumentWeight={updateArgumentWeight}
+              onUpdateArgumentText={(text: string) => setNewArgument({ ...newArgument, text })}
               decisionTitle={currentDecision.title}
               aiSuggestions={aiSuggestions}
               loadingSuggestions={loadingSuggestions}

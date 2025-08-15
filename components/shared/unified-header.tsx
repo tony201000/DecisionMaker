@@ -2,8 +2,8 @@
 
 import { ArrowRight, BarChart3 } from "lucide-react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
+import { Button } from "@/components/ui/button"
 
 export function UnifiedHeader() {
   const pathname = usePathname()
@@ -12,7 +12,10 @@ export function UnifiedHeader() {
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link
+            href="/"
+            className="flex items-center space-x-2"
+          >
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <BarChart3 className="w-5 h-5 text-primary-foreground" />
             </div>
@@ -22,18 +25,14 @@ export function UnifiedHeader() {
             <Link
               href="/fonctionnalites"
               className={`transition-colors ${
-                pathname === "/fonctionnalites"
-                  ? "text-accent font-medium"
-                  : "text-muted-foreground hover:text-foreground"
+                pathname === "/fonctionnalites" ? "text-accent font-medium" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Fonctionnalités
             </Link>
             <Link
               href="/methode"
-              className={`transition-colors ${
-                pathname === "/methode" ? "text-accent font-medium" : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={`transition-colors ${pathname === "/methode" ? "text-accent font-medium" : "text-muted-foreground hover:text-foreground"}`}
             >
               Méthode
             </Link>
@@ -45,10 +44,18 @@ export function UnifiedHeader() {
             >
               Témoignages
             </Link>
-            <Button asChild variant="outline" size="sm">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+            >
               <Link href="/auth/login">Se connecter</Link>
             </Button>
-            <Button asChild size="sm" className="bg-accent hover:bg-accent/90">
+            <Button
+              asChild
+              size="sm"
+              className="bg-accent hover:bg-accent/90"
+            >
               <Link href="/demo">
                 Voir la démo
                 <ArrowRight className="w-4 h-4 ml-2" />

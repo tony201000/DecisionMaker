@@ -1,10 +1,10 @@
 "use client"
 
+import type { User } from "@supabase/supabase-js"
 import { Clock, FileText, Plus } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { User } from "@supabase/supabase-js"
 import type { Argument } from "@/types/decision"
 
 interface SavedDecision {
@@ -37,30 +37,30 @@ export function DecisionHistory({
   onLoadDecision,
   onCreateNew,
   setArgs,
-  clearArgs,
+  clearArgs
 }: DecisionHistoryProps) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("fr-FR", {
       day: "numeric",
-      month: "short",
-      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      month: "short",
+      year: "numeric"
     })
   }
 
   const getScores = (args: Array<{ weight: number }>) => {
-    const positive = args.filter((arg) => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0)
-    const negative = Math.abs(args.filter((arg) => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0))
-    return { positive, negative }
+    const positive = args.filter(arg => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0)
+    const negative = Math.abs(args.filter(arg => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0))
+    return { negative, positive }
   }
 
   const getRecommendation = (positive: number, negative: number) => {
-    if (positive === 0 && negative === 0) return { text: "Aucune donnée", color: "bg-gray-100 text-gray-800" }
+    if (positive === 0 && negative === 0) return { color: "bg-gray-100 text-gray-800", text: "Aucune donnée" }
     const ratio = negative === 0 ? Number.POSITIVE_INFINITY : positive / negative
-    if (ratio >= 2) return { text: "Favorable", color: "bg-green-100 text-green-800" }
-    if (ratio <= 0.5) return { text: "Défavorable", color: "bg-red-100 text-red-800" }
-    return { text: "Mitigé", color: "bg-orange-100 text-orange-800" }
+    if (ratio >= 2) return { color: "bg-green-100 text-green-800", text: "Favorable" }
+    if (ratio <= 0.5) return { color: "bg-red-100 text-red-800", text: "Défavorable" }
+    return { color: "bg-orange-100 text-orange-800", text: "Mitigé" }
   }
 
   return (
@@ -72,12 +72,21 @@ export function DecisionHistory({
             Historique des décisions
           </CardTitle>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onCreateNew(clearArgs)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onCreateNew(clearArgs)}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Nouvelle
             </Button>
             {user && (
-              <Button variant="outline" size="sm" onClick={() => onLoadDecisionHistory(user)} disabled={loadingHistory}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onLoadDecisionHistory(user)}
+                disabled={loadingHistory}
+              >
                 {loadingHistory ? "Chargement..." : "Actualiser"}
               </Button>
             )}
@@ -93,24 +102,32 @@ export function DecisionHistory({
           <p className="text-muted-foreground text-center py-4">Aucune décision sauvegardée</p>
         ) : (
           <div className="space-y-3 max-h-60 overflow-y-auto">
-            {savedDecisions.map((decision) => {
+            {savedDecisions.map(decision => {
               const { positive, negative } = getScores(decision.arguments)
               const recommendation = getRecommendation(positive, negative)
 
               return (
-                <div
+                <button
                   key={decision.id}
-                  className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                  type="button"
+                  className="w-full text-left p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors focus:outline-none"
                   onClick={() => onLoadDecision(decision, setArgs)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      onLoadDecision(decision, setArgs)
+                    }
+                  }}
+                  tabIndex={0}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h4 className="font-medium text-sm">{decision.title}</h4>
-                      {decision.description && (
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{decision.description}</p>
-                      )}
+                      {decision.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{decision.description}</p>}
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs"
+                        >
                           <FileText className="w-3 h-3 mr-1" />
                           {decision.arguments.length} arguments
                         </Badge>
@@ -119,7 +136,7 @@ export function DecisionHistory({
                     </div>
                     <div className="text-xs text-muted-foreground ml-2">{formatDate(decision.created_at)}</div>
                   </div>
-                </div>
+                </button>
               )
             })}
           </div>

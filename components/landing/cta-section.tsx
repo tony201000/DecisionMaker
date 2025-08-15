@@ -1,11 +1,12 @@
 "use client"
 
+import type { User } from "@supabase/supabase-js"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 interface CTASectionProps {
-  user: any
+  user: User | null
   loading: boolean
 }
 
@@ -14,9 +15,7 @@ export function CTASection({ user, loading }: CTASectionProps) {
     <section className="py-20 bg-primary">
       <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
         <div className="space-y-6">
-          <h2 className="text-3xl lg:text-4xl font-bold text-primary-foreground">
-            Prêt à prendre de meilleures décisions ?
-          </h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-primary-foreground">Prêt à prendre de meilleures décisions ?</h2>
           <p className="text-xl text-primary-foreground/80">
             Rejoignez des milliers de professionnels qui utilisent déjà notre plateforme pour optimiser leurs décisions.
           </p>
@@ -28,7 +27,12 @@ export function CTASection({ user, loading }: CTASectionProps) {
               </div>
             ) : user ? (
               <>
-                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+                <Button
+                  asChild
+                  size="lg"
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                >
                   <Link href="/app">
                     Accéder à l'application
                     <ArrowRight className="w-5 h-5 ml-2" />
@@ -45,7 +49,12 @@ export function CTASection({ user, loading }: CTASectionProps) {
               </>
             ) : (
               <>
-                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+                <Button
+                  asChild
+                  size="lg"
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                >
                   <Link href="/auth/sign-up">
                     Commencer maintenant
                     <ArrowRight className="w-5 h-5 ml-2" />

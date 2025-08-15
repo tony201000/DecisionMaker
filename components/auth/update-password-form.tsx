@@ -1,14 +1,13 @@
 "use client"
 
+import { Eye, EyeOff } from "lucide-react"
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/client"
-import { Eye, EyeOff } from "lucide-react"
 
 export function UpdatePasswordForm() {
   const [password, setPassword] = useState("")
@@ -39,7 +38,7 @@ export function UpdatePasswordForm() {
 
     try {
       const { error } = await supabase.auth.updateUser({
-        password: password,
+        password: password
       })
 
       if (error) {
@@ -49,7 +48,7 @@ export function UpdatePasswordForm() {
         setPassword("")
         setConfirmPassword("")
       }
-    } catch (error) {
+    } catch (_error) {
       setMessage("Une erreur est survenue")
     } finally {
       setLoading(false)
@@ -63,7 +62,10 @@ export function UpdatePasswordForm() {
         <CardDescription>Entrez votre nouveau mot de passe</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="password">Nouveau mot de passe</Label>
             <div className="relative">
@@ -71,7 +73,7 @@ export function UpdatePasswordForm() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 required
                 minLength={6}
               />
@@ -94,7 +96,7 @@ export function UpdatePasswordForm() {
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={e => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
               />
@@ -110,11 +112,13 @@ export function UpdatePasswordForm() {
             </div>
           </div>
 
-          {message && (
-            <div className={`text-sm ${message.includes("succès") ? "text-green-600" : "text-red-600"}`}>{message}</div>
-          )}
+          {message && <div className={`text-sm ${message.includes("succès") ? "text-green-600" : "text-red-600"}`}>{message}</div>}
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+          >
             {loading ? "Mise à jour..." : "Mettre à jour le mot de passe"}
           </Button>
         </form>

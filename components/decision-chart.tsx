@@ -27,10 +27,10 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
 
   // Determine recommendation based on 2:1 rule
   const recommendation = useMemo(() => {
-    if (totalScore === 0) return { text: "Aucune donnée", color: "text-gray-500" }
-    if (positiveScore >= negativeScore * 2) return { text: "Favorable", color: "text-green-600" }
-    if (negativeScore >= positiveScore * 2) return { text: "Défavorable", color: "text-red-600" }
-    return { text: "Mitigé", color: "text-orange-600" }
+    if (totalScore === 0) return { color: "text-gray-500", text: "Aucune donnée" }
+    if (positiveScore >= negativeScore * 2) return { color: "text-green-600", text: "Favorable" }
+    if (negativeScore >= positiveScore * 2) return { color: "text-red-600", text: "Défavorable" }
+    return { color: "text-orange-600", text: "Mitigé" }
   }, [totalScore, positiveScore, negativeScore])
 
   // Create gradient stops for the semicircle
@@ -49,17 +49,46 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
         <div className="flex flex-col items-center space-y-6">
           {/* Semicircular Gauge */}
           <div className="relative flex flex-col items-center">
-            <svg width="300" height="160" viewBox="0 0 300 160" className="overflow-visible">
+            <svg
+              width="300"
+              height="160"
+              viewBox="0 0 300 160"
+              className="overflow-visible"
+            >
               <title>Decision Chart Visualization</title>
               {/* Gradient definition */}
               <defs>
-                <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#dc2626" />
-                  <stop offset="20%" stopColor="#ea580c" />
-                  <stop offset="40%" stopColor="#f59e0b" />
-                  <stop offset="60%" stopColor="#eab308" />
-                  <stop offset="80%" stopColor="#84cc16" />
-                  <stop offset="100%" stopColor="#16a34a" />
+                <linearGradient
+                  id={gradientId}
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor="#dc2626"
+                  />
+                  <stop
+                    offset="20%"
+                    stopColor="#ea580c"
+                  />
+                  <stop
+                    offset="40%"
+                    stopColor="#f59e0b"
+                  />
+                  <stop
+                    offset="60%"
+                    stopColor="#eab308"
+                  />
+                  <stop
+                    offset="80%"
+                    stopColor="#84cc16"
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="#16a34a"
+                  />
                 </linearGradient>
               </defs>
               {/* Background semicircle */}
@@ -104,15 +133,19 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
               />
 
               {/* Needle pivot point */}
-              <circle cx="150" cy="140" r="6" fill="#374151" className="dark:fill-gray-200" />
+              <circle
+                cx="150"
+                cy="140"
+                r="6"
+                fill="#374151"
+                className="dark:fill-gray-200"
+              />
             </svg>
 
             <div className="flex items-center justify-center gap-8 mt-4">
               {/* Negative Score Circle */}
               <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  {negativeScore}
-                </div>
+                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xl">{negativeScore}</div>
                 <p className="text-sm text-red-600 mt-2 font-medium">Négatifs</p>
               </div>
 
@@ -133,10 +166,7 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
 
           {/* Rule explanation */}
           <div className="text-center text-sm text-gray-600 dark:text-gray-400 max-w-md">
-            <p>
-              Règle 2:1 de Schulich : Une décision est favorable si les arguments positifs sont au moins 2 fois
-              supérieurs aux négatifs.
-            </p>
+            <p>Règle 2:1 de Schulich : Une décision est favorable si les arguments positifs sont au moins 2 fois supérieurs aux négatifs.</p>
           </div>
         </div>
       </CardContent>

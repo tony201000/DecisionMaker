@@ -2,8 +2,15 @@ import { BarChart3 } from "lucide-react"
 
 const features = [
   {
+    description: "L'intelligence artificielle analyse votre contexte et propose des arguments pertinents que vous n'auriez peut-être pas considérés.",
     icon: (
-      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        className="w-6 h-6 text-primary"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <title>IA Suggestions</title>
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -12,19 +19,23 @@ const features = [
         />
       </svg>
     ),
-    title: "Suggestions IA",
-    description:
-      "L'intelligence artificielle analyse votre contexte et propose des arguments pertinents que vous n'auriez peut-être pas considérés.",
+    title: "Suggestions IA"
   },
   {
+    description: "Gauge semi-circulaire intuitive basée sur la méthode Schulich pour visualiser instantanément l'équilibre de vos arguments.",
     icon: <BarChart3 className="w-6 h-6 text-primary" />,
-    title: "Visualisation claire",
-    description:
-      "Gauge semi-circulaire intuitive basée sur la méthode Schulich pour visualiser instantanément l'équilibre de vos arguments.",
+    title: "Visualisation claire"
   },
   {
+    description: "Vos décisions sont stockées de manière sécurisée et accessible uniquement par vous. Confidentialité garantie.",
     icon: (
-      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        className="w-6 h-6 text-primary"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <title>Data Security</title>
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -33,13 +44,18 @@ const features = [
         />
       </svg>
     ),
-    title: "Données sécurisées",
-    description:
-      "Vos décisions sont stockées de manière sécurisée et accessible uniquement par vous. Confidentialité garantie.",
+    title: "Données sécurisées"
   },
   {
+    description: "Slider de notation de -10 à +10, tri automatique des arguments, et interface responsive pour tous vos appareils.",
     icon: (
-      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        className="w-6 h-6 text-primary"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <title>Interface intuitive</title>
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -48,22 +64,38 @@ const features = [
         />
       </svg>
     ),
-    title: "Interface intuitive",
-    description:
-      "Slider de notation de -10 à +10, tri automatique des arguments, et interface responsive pour tous vos appareils.",
+    title: "Interface intuitive"
   },
   {
+    description: "Partagez vos analyses avec votre équipe et prenez des décisions collectives éclairées.",
     icon: (
-      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-8 0v4h8z" />
+      <svg
+        className="w-6 h-6 text-primary"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <title>Collaboration</title>
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M17 20h5v-2a3 3 0 00-8 0v4h8z"
+        />
       </svg>
     ),
-    title: "Collaboration",
-    description: "Partagez vos analyses avec votre équipe et prenez des décisions collectives éclairées.",
+    title: "Collaboration"
   },
   {
+    description: "Retrouvez toutes vos décisions passées, suivez leur évolution et apprenez de vos choix précédents.",
     icon: (
-      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        className="w-6 h-6 text-primary"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <title>Historique complet</title>
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -72,14 +104,16 @@ const features = [
         />
       </svg>
     ),
-    title: "Historique complet",
-    description: "Retrouvez toutes vos décisions passées, suivez leur évolution et apprenez de vos choix précédents.",
-  },
+    title: "Historique complet"
+  }
 ]
 
 export function FeaturesSection() {
   return (
-    <section id="fonctionnalites" className="py-20 bg-muted/30">
+    <section
+      id="fonctionnalites"
+      className="py-20 bg-muted/30"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground">Fonctionnalités puissantes</h2>
@@ -88,11 +122,12 @@ export function FeaturesSection() {
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <div key={index} className="bg-card rounded-xl p-6 shadow-lg border border-border">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                {feature.icon}
-              </div>
+          {features.map(feature => (
+            <div
+              key={feature.title}
+              className="bg-card rounded-xl p-6 shadow-lg border border-border"
+            >
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">{feature.icon}</div>
               <h3 className="text-xl font-semibold text-card-foreground mb-3">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.description}</p>
             </div>

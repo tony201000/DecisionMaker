@@ -1,22 +1,22 @@
-import { groq } from "@ai-sdk/groq";
-import { generateText } from "ai";
-import { type NextRequest, NextResponse } from "next/server";
+import { groq } from "@ai-sdk/groq"
+import { generateText } from "ai"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
-	try {
-		const { title, description, existingArguments } = await request.json();
+  try {
+    const { title, description, existingArguments } = await request.json()
 
-		if (!title) {
-			return NextResponse.json({ error: "Title is required" }, { status: 400 });
-		}
+    if (!title) {
+      return NextResponse.json({ error: "Title is required" }, { status: 400 })
+    }
 
-		// Construire le contexte pour l'IA
-		const existingArgsText =
-			existingArguments?.length > 0
-				? `\n\nArguments déjà identifiés :\n${existingArguments.map((arg: any) => `- ${arg.text} (note: ${arg.weight})`).join("\n")}`
-				: "";
+    // Construire le contexte pour l'IA
+    const existingArgsText =
+      existingArguments?.length > 0
+        ? `\n\nArguments déjà identifiés :\n${existingArguments.map((arg: any) => `- ${arg.text} (note: ${arg.weight})`).join("\n")}`
+        : ""
 
-		const prompt = `Tu es un assistant expert en prise de décision qui aide les utilisateurs à explorer tous les aspects d'une décision importante. 
+    const prompt = `Tu es un assistant expert en prise de décision qui aide les utilisateurs à explorer tous les aspects d'une décision importante. 
 
 DÉCISION À ANALYSER :
 Titre : ${title}
@@ -49,28 +49,25 @@ FORMAT DE RÉPONSE (JSON strict) :
 
 CATÉGORIES possibles : Financier, Émotionnel, Professionnel, Social, Santé, Temps, Risque, Opportunité, Personnel, Familial
 
-Génère exactement 6 arguments (3 positifs avec poids 3-8, 3 négatifs avec poids -3 à -8).`;
+Génère exactement 6 arguments (3 positifs avec poids 3-8, 3 négatifs avec poids -3 à -8).`
 
-		const { text } = await generateText({
-			model: groq("openai/gpt-oss-20b"),
-			prompt,
-			temperature: 0.7,
-		});
+    const { text } = await generateText({
+      model: groq("openai/gpt-oss-20b"),
+      prompt,
+      temperature: 0.7
+    })
 
-		// Parser la réponse JSON
-		const jsonMatch = text.match(/\{[\s\S]*\}/);
-		if (!jsonMatch) {
-			throw new Error("Invalid JSON response from AI");
-		}
+    // Parser la réponse JSON
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI")
+    }
 
-		const suggestions = JSON.parse(jsonMatch[0]);
+    const suggestions = JSON.parse(jsonMatch[0])
 
-		return NextResponse.json(suggestions);
-	} catch (error) {
-		console.error("Error generating suggestions:", error);
-		return NextResponse.json(
-			{ error: "Failed to generate suggestions" },
-			{ status: 500 },
-		);
-	}
+    return NextResponse.json(suggestions)
+  } catch (error) {
+    console.error("Error generating suggestions:", error)
+    return NextResponse.json({ error: "Failed to generate suggestions" }, { status: 500 })
+  }
 }

@@ -32,7 +32,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
-        password,
+        password
       })
       if (error) throw error
       router.push("/app")
@@ -48,7 +48,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+    >
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Connexion</CardTitle>
@@ -65,7 +68,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                   placeholder="vous@exemple.com"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                 />
               </div>
               <div className="grid gap-2">
@@ -75,22 +78,32 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading}
+              >
                 {isLoading ? "Connexion..." : "Se connecter"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
               Pas de compte ?{" "}
-              <Link href="/auth/sign-up" className="underline underline-offset-4">
+              <Link
+                href="/auth/sign-up"
+                className="underline underline-offset-4"
+              >
                 S'inscrire
               </Link>
             </div>
             <div className="mt-2 text-center text-sm">
-              <Link href="/auth/forgot-password" className="underline underline-offset-4 text-muted-foreground">
+              <Link
+                href="/auth/forgot-password"
+                className="underline underline-offset-4 text-muted-foreground"
+              >
                 Mot de passe oublié ?
               </Link>
             </div>

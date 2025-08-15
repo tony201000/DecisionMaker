@@ -1,7 +1,7 @@
 "use client"
 
-import React from "react"
 import { AlertTriangle, RefreshCw } from "lucide-react"
+import React from "react"
 import { Button } from "@/components/ui/button"
 
 interface ErrorBoundaryState {
@@ -21,7 +21,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error }
+    return { error, hasError: true }
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -29,24 +29,30 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   resetError = () => {
-    this.setState({ hasError: false, error: undefined })
+    this.setState({ error: undefined, hasError: false })
   }
 
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         const FallbackComponent = this.props.fallback
-        return <FallbackComponent error={this.state.error} resetError={this.resetError} />
+        return (
+          <FallbackComponent
+            error={this.state.error}
+            resetError={this.resetError}
+          />
+        )
       }
 
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
           <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
           <h2 className="text-xl font-semibold mb-2">Une erreur s'est produite</h2>
-          <p className="text-muted-foreground mb-6 max-w-md">
-            Désolé, quelque chose s'est mal passé. Veuillez réessayer ou actualiser la page.
-          </p>
-          <Button onClick={this.resetError} className="gap-2">
+          <p className="text-muted-foreground mb-6 max-w-md">Désolé, quelque chose s'est mal passé. Veuillez réessayer ou actualiser la page.</p>
+          <Button
+            onClick={this.resetError}
+            className="gap-2"
+          >
             <RefreshCw className="h-4 w-4" />
             Réessayer
           </Button>

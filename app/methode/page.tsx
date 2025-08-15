@@ -1,58 +1,58 @@
 "use client"
 
-import { ArrowRight, CheckCircle, Brain, BarChart3, Lightbulb, Target } from "lucide-react"
+import { ArrowRight, BarChart3, Brain, CheckCircle, Lightbulb, Target } from "lucide-react"
 import Link from "next/link"
+import { UnifiedHeader } from "@/components/shared/unified-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { UnifiedHeader } from "@/components/shared/unified-header"
 
 const steps = [
   {
-    number: 1,
-    title: "Définissez votre décision",
     description: "Décrivez clairement la situation et le contexte de votre décision.",
-    icon: <Target className="w-6 h-6" />,
     details: ["Contexte détaillé", "Enjeux identifiés", "Objectifs clairs"],
+    icon: <Target className="w-6 h-6" />,
+    number: 1,
+    title: "Définissez votre décision"
   },
   {
-    number: 2,
-    title: "Listez vos arguments",
     description: "Ajoutez vos arguments et notez-les de -10 à +10 selon leur importance.",
-    icon: <Lightbulb className="w-6 h-6" />,
     details: ["Arguments pour/contre", "Notation pondérée", "Tri automatique"],
+    icon: <Lightbulb className="w-6 h-6" />,
+    number: 2,
+    title: "Listez vos arguments"
   },
   {
-    number: 3,
-    title: "Obtenez des suggestions IA",
     description: "L'IA analyse votre contexte et propose des arguments supplémentaires.",
-    icon: <Brain className="w-6 h-6" />,
     details: ["Analyse contextuelle", "Suggestions pertinentes", "Arguments manqués"],
+    icon: <Brain className="w-6 h-6" />,
+    number: 3,
+    title: "Obtenez des suggestions IA"
   },
   {
-    number: 4,
-    title: "Visualisez et décidez",
     description: "La visualisation semi-circulaire vous donne une recommandation claire basée sur la règle 2:1.",
-    icon: <BarChart3 className="w-6 h-6" />,
     details: ["Gauge interactive", "Règle 2:1 de Schulich", "Recommandation claire"],
-  },
+    icon: <BarChart3 className="w-6 h-6" />,
+    number: 4,
+    title: "Visualisez et décidez"
+  }
 ]
 
 const principles = [
   {
-    title: "Règle 2:1 de Schulich",
     description: "Une décision est favorable si les arguments positifs sont au moins 2 fois supérieurs aux négatifs.",
     example: "14 points positifs vs 7 points négatifs = Décision favorable",
+    title: "Règle 2:1 de Schulich"
   },
   {
-    title: "Pondération intelligente",
     description: "Chaque argument est noté de -10 à +10 selon son importance réelle dans votre contexte.",
     example: "Un risque majeur (-8) pèse plus qu'un avantage mineur (+2)",
+    title: "Pondération intelligente"
   },
   {
-    title: "Analyse contextuelle",
     description: "L'IA comprend votre situation et propose des arguments que vous n'auriez pas considérés.",
     example: "Suggestions basées sur des cas similaires et l'expertise sectorielle",
-  },
+    title: "Analyse contextuelle"
+  }
 ]
 
 export default function MethodPage() {
@@ -69,18 +69,24 @@ export default function MethodPage() {
               La Méthode <span className="text-primary">Schulich</span> Enrichie par l'IA
             </h1>
             <p className="text-xl text-muted-foreground max-w-4xl mx-auto">
-              Découvrez comment notre plateforme s'appuie sur la méthode éprouvée de Seymour Schulich, enrichie par
-              l'intelligence artificielle pour vous aider à prendre des décisions plus éclairées.
+              Découvrez comment notre plateforme s'appuie sur la méthode éprouvée de Seymour Schulich, enrichie par l'intelligence artificielle pour
+              vous aider à prendre des décisions plus éclairées.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/demo">
-                <Button size="lg" className="bg-primary hover:bg-primary/90">
+                <Button
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90"
+                >
                   Voir la méthode en action
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
               <Link href="/fonctionnalites">
-                <Button variant="outline" size="lg">
+                <Button
+                  variant="outline"
+                  size="lg"
+                >
                   Découvrir les fonctionnalités
                 </Button>
               </Link>
@@ -99,7 +105,10 @@ export default function MethodPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {steps.map((step, index) => (
-              <div key={step.number} className="relative">
+              <div
+                key={step.number}
+                className="relative"
+              >
                 {index < steps.length - 1 && (
                   <div className="hidden lg:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-accent to-transparent z-0" />
                 )}
@@ -108,16 +117,17 @@ export default function MethodPage() {
                     <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-accent-foreground text-2xl font-bold mx-auto">
                       {step.number}
                     </div>
-                    <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto text-accent">
-                      {step.icon}
-                    </div>
+                    <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto text-accent">{step.icon}</div>
                     <CardTitle className="text-xl text-card-foreground">{step.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <CardDescription className="text-muted-foreground text-center">{step.description}</CardDescription>
                     <ul className="space-y-2">
-                      {step.details.map((detail, idx) => (
-                        <li key={idx} className="flex items-center text-sm text-muted-foreground">
+                      {step.details.map(detail => (
+                        <li
+                          key={detail}
+                          className="flex items-center text-sm text-muted-foreground"
+                        >
                           <CheckCircle className="w-4 h-4 text-accent mr-2 flex-shrink-0" />
                           {detail}
                         </li>
@@ -140,8 +150,11 @@ export default function MethodPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {principles.map((principle, index) => (
-              <Card key={index} className="border-border/50 hover:border-accent/50 transition-colors">
+            {principles.map(principle => (
+              <Card
+                key={principle.title}
+                className="border-border/50 hover:border-accent/50 transition-colors"
+              >
                 <CardHeader>
                   <CardTitle className="text-xl text-card-foreground">{principle.title}</CardTitle>
                 </CardHeader>
@@ -199,14 +212,15 @@ export default function MethodPage() {
                 </div>
                 <div className="text-center p-4 bg-accent/10 rounded-lg">
                   <p className="text-lg font-semibold text-accent mb-2">Recommandation : Favorable</p>
-                  <p className="text-sm text-muted-foreground">
-                    Ratio 2:1 respecté (14 vs 7) - La décision est recommandée
-                  </p>
+                  <p className="text-sm text-muted-foreground">Ratio 2:1 respecté (14 vs 7) - La décision est recommandée</p>
                 </div>
               </div>
               <div className="text-center">
                 <Link href="/demo">
-                  <Button size="lg" className="bg-accent hover:bg-accent/90">
+                  <Button
+                    size="lg"
+                    className="bg-accent hover:bg-accent/90"
+                  >
                     Essayer avec vos propres données
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
@@ -227,7 +241,11 @@ export default function MethodPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/demo">
-                <Button size="lg" variant="secondary" className="bg-accent hover:bg-accent/90">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="bg-accent hover:bg-accent/90"
+                >
                   Commencer la démo
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>

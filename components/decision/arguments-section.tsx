@@ -1,17 +1,16 @@
 "use client"
 
-import React from "react"
+import { Check, Edit2, Plus, Sparkles, Trash2, X } from "lucide-react"
+import React, { useEffect, useRef, useState } from "react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash2, Sparkles, Edit2, Check, X } from "lucide-react"
-import { useRef, useEffect, useState } from "react"
-import type { Argument, AISuggestion } from "@/types/decision"
-import { validateArgument } from "@/lib/validation"
-import { DECISION_CONSTANTS } from "@/lib/constants"
 import { useToast } from "@/hooks/use-toast"
+import { DECISION_CONSTANTS } from "@/lib/constants"
+import { validateArgument } from "@/lib/validation"
+import type { AISuggestion, Argument } from "@/types/decision"
 
 interface ArgumentsSectionProps {
   newArgument: { text: string; weight: number }
@@ -40,12 +39,14 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
   aiSuggestions,
   loadingSuggestions,
   onGenerateSuggestions,
-  onAddSuggestion,
+  onAddSuggestion
 }: ArgumentsSectionProps) {
   const sliderRef = useRef<HTMLDivElement>(null)
   const [editingArgument, setEditingArgument] = useState<string | null>(null)
   const [editingText, setEditingText] = useState("")
-  const [editingSuggestions, setEditingSuggestions] = useState<{ [key: number]: { text: string; weight: number } }>({})
+  const [editingSuggestions, setEditingSuggestions] = useState<{
+    [key: number]: { text: string; weight: number }
+  }>({})
   const [validationErrors, setValidationErrors] = useState<string[]>([])
 
   const { addToast } = useToast()
@@ -85,7 +86,7 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
     if (editingText.trim()) {
       // Update argument text (we'll need to add this to the parent component)
       onUpdateArgumentText(argumentId, editingText)
-      const currentWeight = sortedArguments.find((a) => a.id === argumentId)?.weight || 0
+      const currentWeight = sortedArguments.find(a => a.id === argumentId)?.weight || 0
       onUpdateArgumentWeight(argumentId, currentWeight)
     }
     setEditingArgument(null)
@@ -98,29 +99,29 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
   }
 
   const startEditingSuggestion = (index: number, suggestion: AISuggestion) => {
-    setEditingSuggestions((prev) => ({
+    setEditingSuggestions(prev => ({
       ...prev,
-      [index]: { text: suggestion.text, weight: suggestion.weight },
+      [index]: { text: suggestion.text, weight: suggestion.weight }
     }))
   }
 
   const updateSuggestionEdit = (index: number, field: "text" | "weight", value: string | number) => {
-    setEditingSuggestions((prev) => ({
+    setEditingSuggestions(prev => ({
       ...prev,
-      [index]: { ...prev[index], [field]: value },
+      [index]: { ...prev[index], [field]: value }
     }))
   }
 
   const saveSuggestionEdit = (index: number, originalSuggestion: AISuggestion) => {
     const edited = editingSuggestions[index]
-    if (edited && edited.text.trim()) {
+    if (edited?.text.trim()) {
       onAddSuggestion({
         ...originalSuggestion,
         text: edited.text,
-        weight: edited.weight,
+        weight: edited.weight
       })
     }
-    setEditingSuggestions((prev) => {
+    setEditingSuggestions(prev => {
       const newState = { ...prev }
       delete newState[index]
       return newState
@@ -128,7 +129,7 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
   }
 
   const cancelSuggestionEdit = (index: number) => {
-    setEditingSuggestions((prev) => {
+    setEditingSuggestions(prev => {
       const newState = { ...prev }
       delete newState[index]
       return newState
@@ -142,7 +143,10 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
       const buttonWidth = 48 // w-12 = 48px
       const containerWidth = sliderRef.current.clientWidth
       const scrollPosition = selectedIndex * buttonWidth - containerWidth / 2 + buttonWidth / 2
-      sliderRef.current.scrollTo({ left: Math.max(0, scrollPosition), behavior: "smooth" })
+      sliderRef.current.scrollTo({
+        behavior: "smooth",
+        left: Math.max(0, scrollPosition)
+      })
     }
   }, [newArgument.weight, ratings])
 
@@ -151,9 +155,9 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
     if (!validation.isValid) {
       setValidationErrors(validation.errors)
       addToast({
-        title: "Erreur de validation",
         description: validation.errors[0],
-        variant: "destructive",
+        title: "Erreur de validation",
+        variant: "destructive"
       })
       return
     }
@@ -181,17 +185,23 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
             <Textarea
               placeholder="Décrivez votre argument..."
               value={newArgument.text}
-              onChange={(e) => setNewArgument({ ...newArgument, text: e.target.value })}
+              onChange={e => setNewArgument({ ...newArgument, text: e.target.value })}
               rows={2}
               maxLength={DECISION_CONSTANTS.MAX_ARGUMENT_LENGTH}
               aria-describedby="argument-help"
               aria-invalid={validationErrors.length > 0}
             />
-            <div id="argument-help" className="text-xs text-muted-foreground">
+            <div
+              id="argument-help"
+              className="text-xs text-muted-foreground"
+            >
               Décrivez un point positif ou négatif concernant votre décision
             </div>
             {validationErrors.length > 0 && (
-              <div className="text-xs text-destructive" role="alert">
+              <div
+                className="text-xs text-destructive"
+                role="alert"
+              >
                 {validationErrors[0]}
               </div>
             )}
@@ -205,21 +215,30 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
               role="radiogroup"
               aria-label="Sélectionner une note de -10 à +10"
             >
-              {ratings.map((rating) => (
-                <button
+              {ratings.map(rating => (
+                <label
                   key={rating}
-                  onClick={() => setNewArgument({ ...newArgument, weight: rating })}
-                  className={`
-                    w-12 h-12 rounded-full text-sm font-medium transition-all duration-200 flex-shrink-0
-                    ${getGradient(rating)}
-                    ${newArgument.weight === rating ? "ring-2 ring-primary scale-110" : "hover:scale-105"}
-                  `}
-                  role="radio"
-                  aria-checked={newArgument.weight === rating}
-                  aria-label={`Note ${rating}`}
+                  className="relative"
                 >
-                  {rating}
-                </button>
+                  <input
+                    type="radio"
+                    name="argument-weight"
+                    value={rating}
+                    checked={newArgument.weight === rating}
+                    onChange={() => setNewArgument({ ...newArgument, weight: rating })}
+                    className="sr-only"
+                    aria-label={`Note ${rating}`}
+                  />
+                  <span
+                    className={`
+					w-12 h-12 rounded-full text-sm font-medium transition-all duration-200 flex-shrink-0 inline-flex items-center justify-center cursor-pointer
+					${getGradient(rating)}
+					${newArgument.weight === rating ? "ring-2 ring-primary scale-110" : "hover:scale-105"}
+				  `}
+                  >
+                    {rating}
+                  </span>
+                </label>
               ))}
             </div>
           </div>
@@ -258,28 +277,31 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
             {aiSuggestions.length > 0 && (
               <div className="space-y-3">
                 {aiSuggestions.map((suggestion, index) => (
-                  <div key={index} className="p-4 border rounded-lg bg-muted/50 space-y-2">
+                  <div
+                    key={suggestion.text}
+                    className="p-4 border rounded-lg bg-muted/50 space-y-2"
+                  >
                     {editingSuggestions[index] ? (
                       <div className="space-y-3">
                         <Textarea
                           value={editingSuggestions[index].text}
-                          onChange={(e) => updateSuggestionEdit(index, "text", e.target.value)}
+                          onChange={e => updateSuggestionEdit(index, "text", e.target.value)}
                           rows={2}
                           className="w-full"
                         />
                         <div className="flex items-center gap-2">
                           <Label className="text-sm">Note:</Label>
                           <div className="flex gap-1 overflow-x-auto">
-                            {ratings.map((rating) => {
-                              const baseClasses =
-                                "w-8 h-8 rounded text-xs font-medium transition-all duration-200 flex-shrink-0"
+                            {ratings.map(rating => {
+                              const baseClasses = "w-8 h-8 rounded text-xs font-medium transition-all duration-200 flex-shrink-0"
                               const gradientClass = getGradient(rating)
                               const isSelected = editingSuggestions[index]?.weight === rating
                               const selectionClass = isSelected ? "ring-2 ring-primary scale-110" : "hover:scale-105"
-                              const finalClassName = baseClasses + " " + gradientClass + " " + selectionClass
+                              const finalClassName = `${baseClasses} ${gradientClass} ${selectionClass}`
 
                               return (
                                 <button
+                                  type="button"
                                   key={rating}
                                   onClick={() => updateSuggestionEdit(index, "weight", rating)}
                                   className={finalClassName}
@@ -291,11 +313,18 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={() => saveSuggestionEdit(index, suggestion)}>
+                          <Button
+                            size="sm"
+                            onClick={() => saveSuggestionEdit(index, suggestion)}
+                          >
                             <Check className="w-3 h-3 mr-1" />
                             Ajouter
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => cancelSuggestionEdit(index)}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => cancelSuggestionEdit(index)}
+                          >
                             <X className="w-3 h-3" />
                           </Button>
                         </div>
@@ -311,10 +340,17 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
                             {suggestion.weight > 0 ? "+" : ""}
                             {suggestion.weight}
                           </Badge>
-                          <Button size="sm" variant="ghost" onClick={() => startEditingSuggestion(index, suggestion)}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => startEditingSuggestion(index, suggestion)}
+                          >
                             <Edit2 className="w-3 h-3" />
                           </Button>
-                          <Button size="sm" onClick={() => onAddSuggestion(suggestion)}>
+                          <Button
+                            size="sm"
+                            onClick={() => onAddSuggestion(suggestion)}
+                          >
                             <Plus className="w-3 h-3" />
                           </Button>
                         </div>
@@ -338,22 +374,32 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
             <div className="text-center py-8 text-muted-foreground">Aucun argument ajouté pour le moment</div>
           ) : (
             <div className="space-y-3">
-              {sortedArguments.map((argument) => (
-                <div key={argument.id} className={`p-4 border rounded-lg ${getArgumentColor(argument.weight)}`}>
+              {sortedArguments.map(argument => (
+                <div
+                  key={argument.id}
+                  className={`p-4 border rounded-lg ${getArgumentColor(argument.weight)}`}
+                >
                   {editingArgument === argument.id ? (
                     <div className="space-y-3">
                       <Textarea
                         value={editingText}
-                        onChange={(e) => setEditingText(e.target.value)}
+                        onChange={e => setEditingText(e.target.value)}
                         rows={2}
                         className="w-full"
                       />
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => saveArgumentEdit(argument.id)}>
+                        <Button
+                          size="sm"
+                          onClick={() => saveArgumentEdit(argument.id)}
+                        >
                           <Check className="w-3 h-3 mr-1" />
                           Sauvegarder
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={cancelArgumentEdit}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={cancelArgumentEdit}
+                        >
                           <X className="w-3 h-3" />
                         </Button>
                       </div>
@@ -368,10 +414,18 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
                           {argument.weight > 0 ? "+" : ""}
                           {argument.weight}
                         </Badge>
-                        <Button size="sm" variant="ghost" onClick={() => startEditingArgument(argument)}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => startEditingArgument(argument)}
+                        >
                           <Edit2 className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => onRemoveArgument(argument.id)}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => onRemoveArgument(argument.id)}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>

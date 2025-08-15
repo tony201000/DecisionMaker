@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DecisionChart } from "@/components/decision-chart"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface ResultsSectionProps {
   positiveScore: number
@@ -10,7 +10,10 @@ interface ResultsSectionProps {
 export function ResultsSection({ positiveScore, negativeScore, argumentsCount }: ResultsSectionProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <DecisionChart positiveScore={positiveScore} negativeScore={negativeScore} />
+      <DecisionChart
+        positiveScore={positiveScore}
+        negativeScore={negativeScore}
+      />
 
       <Card>
         <CardHeader>
@@ -30,7 +33,8 @@ export function ResultsSection({ positiveScore, negativeScore, argumentsCount }:
             <div>
               <div className="text-sm text-muted-foreground">Ratio</div>
               <div className="text-2xl font-bold">
-                {negativeScore === 0 ? "∞" : (positiveScore / negativeScore).toFixed(1)}:1
+                {negativeScore === 0 ? "∞" : (positiveScore / negativeScore).toFixed(1)}
+                :1
               </div>
             </div>
           </div>
@@ -46,8 +50,7 @@ export function ResultsSection({ positiveScore, negativeScore, argumentsCount }:
           ) : (
             <div className="text-center p-4 bg-muted rounded-lg">
               <div className="text-sm text-muted-foreground mb-2">
-                Règle 2:1 de Schulich : Une décision est favorable si les arguments positifs l'emportent avec un ratio
-                d'au moins 2:1
+                Règle 2:1 de Schulich : Une décision est favorable si les arguments positifs l'emportent avec un ratio d'au moins 2:1
               </div>
             </div>
           )}

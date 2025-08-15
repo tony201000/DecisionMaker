@@ -1,12 +1,12 @@
 "use client"
 
+import type { User } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { Decision } from "@/types/decision"
-import type { User } from "@supabase/supabase-js"
 
 interface DecisionHeaderProps {
   currentDecision: Decision
@@ -17,14 +17,7 @@ interface DecisionHeaderProps {
   onCreateNew: () => void
 }
 
-export function DecisionHeader({
-  currentDecision,
-  onTitleChange,
-  onDescriptionChange,
-  user,
-  saving,
-  onCreateNew,
-}: DecisionHeaderProps) {
+export function DecisionHeader({ currentDecision, onTitleChange, onDescriptionChange, user, onCreateNew }: DecisionHeaderProps) {
   return (
     <Card className="border-2 border-primary/20">
       <CardHeader>
@@ -37,7 +30,7 @@ export function DecisionHeader({
             id="decision-title"
             placeholder="Ex: Changer d'emploi, Acheter une maison..."
             value={currentDecision.title}
-            onChange={(e) => onTitleChange(e.target.value)}
+            onChange={e => onTitleChange(e.target.value)}
             className="text-lg"
           />
         </div>
@@ -48,7 +41,7 @@ export function DecisionHeader({
             id="decision-description"
             placeholder="Décrivez votre situation, les enjeux, le contexte..."
             value={currentDecision.description}
-            onChange={(e) => onDescriptionChange(e.target.value)}
+            onChange={e => onDescriptionChange(e.target.value)}
             rows={3}
           />
         </div>
@@ -60,7 +53,11 @@ export function DecisionHeader({
               Sauvegarde automatique
             </div>
           )}
-          <Button onClick={onCreateNew} variant="outline" className="ml-auto bg-transparent">
+          <Button
+            onClick={onCreateNew}
+            variant="outline"
+            className="ml-auto bg-transparent"
+          >
             Nouvelle décision
           </Button>
         </div>

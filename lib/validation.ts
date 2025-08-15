@@ -15,8 +15,8 @@ export function validateTitle(title: string): ValidationResult {
   }
 
   return {
-    isValid: errors.length === 0,
     errors,
+    isValid: errors.length === 0
   }
 }
 
@@ -28,8 +28,8 @@ export function validateDescription(description: string): ValidationResult {
   }
 
   return {
-    isValid: errors.length === 0,
     errors,
+    isValid: errors.length === 0
   }
 }
 
@@ -47,7 +47,7 @@ export function validateArgument(text: string, weight: number): ValidationResult
   }
 
   return {
-    isValid: errors.length === 0,
     errors,
+    isValid: errors.length === 0
   }
 }

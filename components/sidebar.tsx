@@ -1,33 +1,33 @@
 "use client"
 
-import type React from "react"
-
 import type { User } from "@supabase/supabase-js"
 import {
+  ChevronRight,
+  Edit3,
+  FileText,
+  History,
   LogIn,
   LogOut,
   Moon,
+  MoreVertical,
+  Pin,
   Settings,
   Sun,
+  Trash2,
   UserIcon,
   UserPlus,
-  X,
-  FileText,
-  History,
-  ChevronRight,
-  MoreVertical,
-  Trash2,
-  Edit3,
-  Pin,
+  X
 } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState, useMemo, useRef } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { createClient } from "@/lib/supabase/client"
-import { useDecision } from "@/hooks/use-decision"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/hooks/use-auth"
+import { useDecision } from "@/hooks/use-decision"
+import { createClient } from "@/lib/supabase/client"
 
 interface SidebarProps {
   isOpen: boolean
@@ -38,78 +38,19 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoadDecision }: SidebarProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [authInitialized, setAuthInitialized] = useState(false)
+  const { user } = useAuth()
   const [renamingDecision, setRenamingDecision] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")
-  const {
-    savedDecisions,
-    loadDecision,
-    currentDecision,
-    getRecentDecisions,
-    loadDecisionHistory,
-    deleteDecision,
-    renameDecision,
-    pinDecision,
-  } = useDecision()
+  const { savedDecisions, loadDecision, currentDecision, getRecentDecisions, loadDecisionHistory, deleteDecision, renameDecision, pinDecision } =
+    useDecision()
 
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = createClient()
 
   useEffect(() => {
-    let mounted = true
-
-    const getUser = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getSession()
-
-        if (mounted) {
-          setUser(user)
-          setLoading(false)
-          setAuthInitialized(true)
-
-          if (user) {
-            await loadDecisionHistory(user)
-          }
-        }
-      } catch (error) {
-        console.error("[v0] Error getting user session:", error)
-        if (mounted) {
-          setLoading(false)
-          setAuthInitialized(true)
-        }
-      }
+    if (user) {
+      loadDecisionHistory(user)
     }
-
-    getUser()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("[v0] Auth state change:", event, !!session?.user)
-
-      if (mounted) {
-        const newUser = session?.user ?? null
-
-        if (user?.id !== newUser?.id || (user === null && newUser !== null) || (user !== null && newUser === null)) {
-          setUser(newUser)
-          setLoading(false)
-          setAuthInitialized(true)
-
-          if (newUser) {
-            await loadDecisionHistory(newUser)
-          }
-        }
-      }
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [supabase])
+  }, [user, loadDecisionHistory])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -172,47 +113,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
     await pinDecision(user, decisionId)
   }
 
-  if (loading && !authInitialized) {
-    return (
-      <>
-        {isOpen && (
-          <button
-            type="button"
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-            onClick={onToggle}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                onToggle()
-              }
-            }}
-            aria-label="Fermer le menu"
-            tabIndex={0}
-          />
-        )}
-
-        <div
-          className={`
-          fixed top-0 left-0 h-full w-80 bg-white dark:bg-gray-900 shadow-lg z-50 transform transition-transform duration-300 ease-in-out
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0 lg:static lg:z-auto
-        `}
-        >
-          <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Menu</h2>
-              <Button variant="ghost" size="sm" onClick={onToggle} className="lg:hidden">
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-gray-500 dark:text-gray-400">Chargement...</div>
-            </div>
-          </div>
-        </div>
-      </>
-    )
-  }
-
   return (
     <>
       {isOpen && (
@@ -220,7 +120,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
           type="button"
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onToggle}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === "Enter" || e.key === " ") {
               onToggle()
             }
@@ -239,7 +139,11 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b border-border">
             <h2 className="text-lg font-semibold text-foreground">Menu</h2>
-            <Button variant="ghost" size="sm" onClick={onToggle}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggle}
+            >
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -262,13 +166,19 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
             ) : (
               <div className="space-y-2">
                 <Link href="/auth/login">
-                  <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <Button
+                    className="w-full justify-start bg-transparent"
+                    variant="outline"
+                  >
                     <LogIn className="w-4 h-4 mr-2" />
                     Se connecter
                   </Button>
                 </Link>
                 <Link href="/auth/sign-up">
-                  <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <Button
+                    className="w-full justify-start bg-transparent"
+                    variant="outline"
+                  >
                     <UserPlus className="w-4 h-4 mr-2" />
                     S'inscrire
                   </Button>
@@ -285,32 +195,28 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                       Décisions récentes
                     </h3>
                     <Link href="/app/history">
-                      <Button variant="ghost" size="sm" className="text-xs">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs"
+                      >
                         Tout voir
                       </Button>
                     </Link>
                   </div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {recentDecisions.map((decision) => {
+                    {recentDecisions.map(decision => {
                       const isActive = currentDecision?.id === decision.id
                       const argumentsArray = decision.arguments || []
-                      const positiveScore = argumentsArray
-                        .filter((arg) => arg?.weight > 0)
-                        .reduce((sum, arg) => sum + (arg?.weight || 0), 0)
-                      const negativeScore = Math.abs(
-                        argumentsArray
-                          .filter((arg) => arg?.weight < 0)
-                          .reduce((sum, arg) => sum + (arg?.weight || 0), 0),
-                      )
+                      const positiveScore = argumentsArray.filter(arg => arg?.weight > 0).reduce((sum, arg) => sum + (arg?.weight || 0), 0)
+                      const negativeScore = Math.abs(argumentsArray.filter(arg => arg?.weight < 0).reduce((sum, arg) => sum + (arg?.weight || 0), 0))
                       const recommendation = getRecommendationColor(positiveScore, negativeScore)
 
                       return (
                         <div
                           key={decision.id}
                           className={`group relative w-full rounded-lg border transition-colors hover:bg-accent/50 ${
-                            isActive
-                              ? "bg-primary/10 border-primary/20"
-                              : "bg-card border-border hover:border-border/60"
+                            isActive ? "bg-primary/10 border-primary/20" : "bg-card border-border hover:border-border/60"
                           }`}
                         >
                           {renamingDecision === decision.id ? (
@@ -318,32 +224,34 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                               <input
                                 type="text"
                                 value={renameValue}
-                                onChange={(e) => setRenameValue(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
+                                onChange={e => setRenameValue(e.target.value)}
+                                onKeyDown={e => {
+                                  if (e.key === "Enter" && decision.id) {
                                     handleRenameSubmit(decision.id)
                                   } else if (e.key === "Escape") {
                                     setRenamingDecision(null)
                                   }
                                 }}
-                                onBlur={() => handleRenameSubmit(decision.id)}
+                                onBlur={() => {
+                                  if (decision.id) {
+                                    handleRenameSubmit(decision.id)
+                                  }
+                                }}
                                 className="w-full px-2 py-1 text-sm bg-background border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                autoFocus
                               />
                             </div>
                           ) : (
                             <>
                               <button
-                                onClick={() => handleDecisionSelect(decision.id)}
+                                type="button"
+                                onClick={() => decision.id && handleDecisionSelect(decision.id)}
                                 className="w-full text-left p-3 rounded-lg"
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                       <FileText className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                                      <p className="font-medium text-sm text-card-foreground truncate">
-                                        {formatDecisionTitle(decision.title)}
-                                      </p>
+                                      <p className="font-medium text-sm text-card-foreground truncate">{formatDecisionTitle(decision.title)}</p>
                                     </div>
                                     <div className="flex items-center gap-2 mt-1">
                                       <span className={`text-xs font-medium ${recommendation}`}>
@@ -359,11 +267,12 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                                     </div>
                                     <p className="text-xs text-muted-foreground mt-1">
                                       {(() => {
-                                        const ts = decision.updated_at || decision.created_at
+                                        const ts = decision.createdAt || ""
                                         if (!ts) return "—"
                                         const d = new Date(ts)
-                                        return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("fr-FR")
+                                        return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("fr-FR")
                                       })()}
+                                    </p>
                                   </div>
                                   <ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                                 </div>
@@ -375,28 +284,52 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                                     variant="ghost"
                                     size="sm"
                                     className="absolute top-2 right-2 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={e => e.stopPropagation()}
                                   >
                                     <MoreVertical className="w-3 h-3" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="w-40"
+                                >
                                   <DropdownMenuItem
-                                    onClick={(e) => handlePinDecision(decision.id, e)}
+                                    onClick={e => {
+                                      console.log("Pin dropdown clicked", decision, decision.id)
+                                      if (decision.id) {
+                                        handlePinDecision(decision.id, e)
+                                      } else {
+                                        console.error("Decision ID is missing for pin action")
+                                      }
+                                    }}
                                     className="cursor-pointer"
                                   >
                                     <Pin className="w-3 h-3 mr-2" />
                                     Épingler
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={(e) => handleRenameDecision(decision.id, decision.title || "", e)}
+                                    onClick={e => {
+                                      console.log("Rename dropdown clicked", decision, decision.id, decision.title)
+                                      if (decision.id) {
+                                        handleRenameDecision(decision.id, decision.title || "", e)
+                                      } else {
+                                        console.error("Decision ID is missing for rename action")
+                                      }
+                                    }}
                                     className="cursor-pointer"
                                   >
                                     <Edit3 className="w-3 h-3 mr-2" />
                                     Renommer
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={(e) => handleDeleteDecision(decision.id, e)}
+                                    onClick={e => {
+                                      console.log("Delete dropdown clicked", decision, decision.id)
+                                      if (decision.id) {
+                                        handleDeleteDecision(decision.id, e)
+                                      } else {
+                                        console.error("Decision ID is missing for delete action")
+                                      }
+                                    }}
                                     className="cursor-pointer text-destructive focus:text-destructive"
                                   >
                                     <Trash2 className="w-3 h-3 mr-2" />
@@ -449,10 +382,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Arguments ajoutés</span>
                       <Badge variant="secondary">
-                        {(savedDecisions || []).reduce(
-                          (total, decision) => total + (decision.arguments || []).length,
-                          0,
-                        )}
+                        {(savedDecisions || []).reduce((total, decision) => total + (decision.arguments || []).length, 0)}
                       </Badge>
                     </div>
                   </div>

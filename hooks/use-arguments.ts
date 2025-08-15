@@ -10,30 +10,33 @@ interface NewArgument {
 
 export function useArguments() {
   const [args, setArgs] = useState<Argument[]>([])
-  const [newArgument, setNewArgument] = useState<NewArgument>({ text: "", weight: 0 })
+  const [newArgument, setNewArgument] = useState<NewArgument>({
+    text: "",
+    weight: 0
+  })
 
   const addArgument = () => {
     if (newArgument.text.trim()) {
       const argument: Argument = {
-        id: Date.now().toString(),
+        id: `arg-${newArgument.text.slice(0, 10)}-${Date.now()}`,
         text: newArgument.text.trim(),
-        weight: newArgument.weight,
+        weight: newArgument.weight
       }
-      setArgs((prev) => [...prev, argument].sort((a, b) => a.weight - b.weight))
+      setArgs(prev => [...prev, argument].sort((a, b) => a.weight - b.weight))
       setNewArgument({ text: "", weight: 0 })
     }
   }
 
   const addArgumentDirectly = (argument: Argument) => {
-    setArgs((prev) => [...prev, argument].sort((a, b) => a.weight - b.weight))
+    setArgs(prev => [...prev, argument].sort((a, b) => a.weight - b.weight))
   }
 
   const removeArgument = (id: string) => {
-    setArgs((prev) => prev.filter((arg) => arg.id !== id))
+    setArgs(prev => prev.filter(arg => arg.id !== id))
   }
 
   const updateArgumentWeight = (id: string, weight: number) => {
-    setArgs((prev) => prev.map((arg) => (arg.id === id ? { ...arg, weight } : arg)).sort((a, b) => a.weight - b.weight))
+    setArgs(prev => prev.map(arg => (arg.id === id ? { ...arg, weight } : arg)).sort((a, b) => a.weight - b.weight))
   }
 
   const setArgsDirectly = (newArgs: Argument[]) => {
@@ -46,24 +49,24 @@ export function useArguments() {
   }
 
   // Calculs des scores
-  const positiveScore = args.filter((arg) => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0)
+  const positiveScore = args.filter(arg => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0)
 
-  const negativeScore = Math.abs(args.filter((arg) => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0))
+  const negativeScore = Math.abs(args.filter(arg => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0))
 
   const sortedArguments = [...args].sort((a, b) => a.weight - b.weight)
 
   return {
-    args,
-    newArgument,
-    setNewArgument,
     addArgument,
     addArgumentDirectly,
-    removeArgument,
-    updateArgumentWeight,
-    setArgs: setArgsDirectly,
+    args,
     clearArgs,
-    positiveScore,
     negativeScore,
+    newArgument,
+    positiveScore,
+    removeArgument,
+    setArgs: setArgsDirectly,
+    setNewArgument,
     sortedArguments,
+    updateArgumentWeight
   }
 }

@@ -17,21 +17,25 @@ const toastContext = React.createContext<{
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<ToastData[]>([])
+  const baseId = React.useId()
 
-  const addToast = React.useCallback((toast: Omit<ToastData, "id">) => {
-    const id = Math.random().toString(36).substr(2, 9)
-    setToasts((prev) => [...prev, { ...toast, id }])
-  }, [])
+  const addToast = React.useCallback(
+    (toast: Omit<ToastData, "id">) => {
+      const id = `${baseId}-${Date.now()}`
+      setToasts(prev => [...prev, { ...toast, id }])
+    },
+    [baseId]
+  )
 
   const removeToast = React.useCallback((id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id))
+    setToasts(prev => prev.filter(toast => toast.id !== id))
   }, [])
 
   return (
-    <toastContext.Provider value={{ toasts, addToast, removeToast }}>
+    <toastContext.Provider value={{ addToast, removeToast, toasts }}>
       {children}
       <div className="fixed top-4 right-4 z-50 space-y-2">
-        {toasts.map((toast) => (
+        {toasts.map(toast => (
           <div
             key={toast.id}
             className={`w-full max-w-sm rounded-lg border p-4 shadow-lg transition-all ${
@@ -48,6 +52,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 {toast.description && <div className="text-sm opacity-90">{toast.description}</div>}
               </div>
               <button
+                type="button"
                 onClick={() => removeToast(toast.id)}
                 className="opacity-70 hover:opacity-100 transition-opacity"
                 aria-label="Fermer la notification"

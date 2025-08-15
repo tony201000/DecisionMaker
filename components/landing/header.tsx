@@ -1,11 +1,12 @@
 "use client"
 
+import type { User } from "@supabase/supabase-js"
 import { ArrowRight, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 interface HeaderProps {
-  user: any
+  user: User | null
   loading: boolean
 }
 
@@ -21,13 +22,22 @@ export function Header({ user, loading }: HeaderProps) {
             <span className="text-xl font-bold text-foreground">DecisionAI</span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/fonctionnalites" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/fonctionnalites"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Fonctionnalités
             </Link>
-            <Link href="/methode" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/methode"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Méthode
             </Link>
-            <Link href="/temoignages" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/temoignages"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Témoignages
             </Link>
             {loading ? (
@@ -36,7 +46,10 @@ export function Header({ user, loading }: HeaderProps) {
                 <div className="w-24 h-8 bg-muted animate-pulse rounded"></div>
               </div>
             ) : user ? (
-              <Button asChild size="sm">
+              <Button
+                asChild
+                size="sm"
+              >
                 <Link href="/app">
                   Accéder à l'application
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -44,10 +57,17 @@ export function Header({ user, loading }: HeaderProps) {
               </Button>
             ) : (
               <>
-                <Button asChild variant="outline" size="sm">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                >
                   <Link href="/auth/login">Se connecter</Link>
                 </Button>
-                <Button asChild size="sm">
+                <Button
+                  asChild
+                  size="sm"
+                >
                   <Link href="/auth/sign-up">
                     Commencer
                     <ArrowRight className="w-4 h-4 ml-2" />
