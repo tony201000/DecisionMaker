@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { ArrowLeft, FileText, Search, Calendar, TrendingUp, TrendingDown, Minus } from "lucide-react"
 import { useDecision } from "@/hooks/use-decision"
 import { useAuth } from "@/hooks/use-auth"
+import { useArguments } from "@/hooks/use-arguments"
 import type { Decision } from "@/types/decision"
 
 const ITEMS_PER_PAGE = 12
@@ -17,6 +18,7 @@ export default function HistoryPage() {
   const router = useRouter()
   const { user } = useAuth()
   const { loadDecision } = useDecision()
+  const { setArgs } = useArguments()
   const [decisions, setDecisions] = useState<Decision[]>([])
   const [filteredDecisions, setFilteredDecisions] = useState<Decision[]>([])
   const [loading, setLoading] = useState(true)
@@ -59,15 +61,15 @@ export default function HistoryPage() {
   useEffect(() => {
     const filtered = decisions.filter(
       (decision) =>
-        decision.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        decision.description.toLowerCase().includes(searchTerm.toLowerCase()),
+        (decision.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (decision.description || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredDecisions(filtered)
     setCurrentPage(1)
   }, [searchTerm, decisions])
 
   const handleDecisionSelect = async (decisionId: string) => {
-    await loadDecision(decisionId)
+    await loadDecision(decisionId, setArgs)
     router.push("/app")
   }
 
@@ -81,28 +83,6 @@ export default function HistoryPage() {
     const recommendation = ratio >= 2 ? "Favorable" : ratio <= 0.5 ? "Défavorable" : "Mitigé"
 
     return { positiveScore, negativeScore, recommendation, ratio }
-  }
-
-  const getRecommendationIcon = (recommendation: string) => {
-    switch (recommendation) {
-      case "Favorable":
-        return <TrendingUp className="w-4 h-4 text-green-600" />
-      case "Défavorable":
-        return <TrendingDown className="w-4 h-4 text-red-600" />
-      default:
-        return <Minus className="w-4 h-4 text-orange-600" />
-    }
-  }
-
-  const getRecommendationColor = (recommendation: string) => {
-    switch (recommendation) {
-      case "Favorable":
-        return "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20"
-      case "Défavorable":
-        return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20"
-      default:
-        return "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20"
-    }
   }
 
   const totalPages = Math.ceil(filteredDecisions.length / ITEMS_PER_PAGE)
@@ -163,14 +143,18 @@ export default function HistoryPage() {
                           <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                           <CardTitle className="text-lg truncate">{decision.title}</CardTitle>
                         </div>
-                        {getRecommendationIcon(stats.recommendation)}
+                        {stats.recommendation === "Favorable" && <TrendingUp className="w-4 h-4 text-green-600" />}
+                        {stats.recommendation === "Défavorable" && <TrendingDown className="w-4 h-4 text-red-600" />}
+                        {stats.recommendation === "Mitigé" && <Minus className="w-4 h-4 text-orange-600" />}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <p className="text-sm text-muted-foreground line-clamp-2">{decision.description}</p>
 
                       <div className="flex items-center justify-between">
-                        <Badge className={`${getRecommendationColor(stats.recommendation)} border-0`}>
+                        <Badge
+                          className={`${stats.recommendation === "Favorable" ? "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20" : stats.recommendation === "Défavorable" ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20" : "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20"} border-0`}
+                        >
                           {stats.recommendation}
                         </Badge>
                         <div className="text-sm text-muted-foreground">
