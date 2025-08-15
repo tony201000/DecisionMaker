@@ -1,7 +1,7 @@
 "use client"
 
 import { Menu } from "lucide-react"
-import { useEffect, useState, useCallback, useRef } from "react"
+import { useEffect, useState } from "react"
 import { ArgumentsSection } from "@/components/decision/arguments-section"
 import { DecisionHeader } from "@/components/decision/decision-header"
 import { ResultsSection } from "@/components/decision/results-section"
@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button"
 import { useArguments } from "@/hooks/use-arguments"
 import { useAuth } from "@/hooks/use-auth"
 import { useDecision } from "@/hooks/use-decision"
-import type { AISuggestion, Decision } from "@/types/decision"
+import type { AISuggestion } from "@/types/decision"
+import { debounce } from "lodash"
 
 export default function DecisionMakerPlatform() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -76,72 +77,15 @@ export default function DecisionMakerPlatform() {
     }
   }, [isDarkMode, isMounted])
 
-  const prevDecisionRef = useRef<Decision>()
-  const prevArgsRef = useRef<any[]>([])
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout>()
-
-  const debouncedAutoSave = useCallback(
-    (user: any, decision: Decision, args: any[]) => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current)
-      }
-
-      autoSaveTimeoutRef.current = setTimeout(() => {
-        console.log("[v0] Auto-saving decision:", decision.title)
-        autoSaveDecision(user, decision, args)
-      }, 1000) // Debounce for 1 second
-    },
-    [autoSaveDecision],
-  )
+  const debouncedAutoSaveDecision = debounce((user, currentDecision, args) => {
+    autoSaveDecision(user, currentDecision, args)
+  }, 1000)
 
   useEffect(() => {
-    if (!user || !currentDecision.title.trim()) {
-      return
+    if (user && currentDecision.title.trim()) {
+      debouncedAutoSaveDecision(user, currentDecision, args)
     }
-
-    // Check if decision or args actually changed
-    const decisionChanged =
-      !prevDecisionRef.current ||
-      prevDecisionRef.current.title !== currentDecision.title ||
-      prevDecisionRef.current.description !== currentDecision.description
-
-    const argsChanged = JSON.stringify(prevArgsRef.current) !== JSON.stringify(args)
-
-    if (decisionChanged || argsChanged) {
-      console.log("[v0] Changes detected, scheduling auto-save")
-      debouncedAutoSave(user, currentDecision, args)
-
-      // Update refs
-      prevDecisionRef.current = { ...currentDecision }
-      prevArgsRef.current = [...args]
-    }
-  }, [user, currentDecision, args, debouncedAutoSave])
-
-  useEffect(() => {
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current)
-      }
-    }
-  }, [])
-
-  const handleTitleChange = useCallback(
-    (title: string) => {
-      updateDecisionTitle(user, title, args)
-    },
-    [user, args, updateDecisionTitle],
-  )
-
-  const handleDescriptionChange = useCallback(
-    (description: string) => {
-      updateDecisionDescription(user, description, args)
-    },
-    [user, args, updateDecisionDescription],
-  )
-
-  const handleCreateNew = () => {
-    createNewDecision(clearArgs)
-  }
+  }, [args, user, currentDecision])
 
   const handleGenerateSuggestions = () => {
     generateSuggestions(args)
@@ -149,6 +93,20 @@ export default function DecisionMakerPlatform() {
 
   const handleAddSuggestion = (suggestion: AISuggestion) => {
     addSuggestionAsArgument(suggestion, addArgumentDirectly)
+  }
+
+  const handleCreateNew = () => {
+    createNewDecision(clearArgs)
+  }
+
+  const handleTitleChange = (title: string) => {
+    updateDecisionTitle(user, title, args)
+    debouncedAutoSaveDecision(user, { ...currentDecision, title }, args)
+  }
+
+  const handleDescriptionChange = (description: string) => {
+    updateDecisionDescription(user, description, args)
+    debouncedAutoSaveDecision(user, { ...currentDecision, description }, args)
   }
 
   return (

@@ -312,7 +312,7 @@ export function useDecision() {
         setCurrentDecision((prev) => ({ ...prev, id: decisionData.id }))
       }
 
-      await loadDecisionHistory(user)
+      // The sidebar will refresh its data when needed through other mechanisms
     } catch (error) {
       console.error("Error auto-saving decision:", error)
     }

@@ -40,6 +40,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoadDecision }: SidebarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authInitialized, setAuthInitialized] = useState(false)
   const [renamingDecision, setRenamingDecision] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")
   const {
@@ -56,15 +57,29 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
   const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getSession()
-      setUser(user)
-      setLoading(false)
+    let mounted = true
 
-      if (user) {
-        await loadDecisionHistory(user)
+    const getUser = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getSession()
+
+        if (mounted) {
+          setUser(user)
+          setLoading(false)
+          setAuthInitialized(true)
+
+          if (user) {
+            await loadDecisionHistory(user)
+          }
+        }
+      } catch (error) {
+        console.error("[v0] Error getting user session:", error)
+        if (mounted) {
+          setLoading(false)
+          setAuthInitialized(true)
+        }
       }
     }
 
@@ -72,17 +87,28 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[v0] Auth state change:", event, !!session?.user)
 
-      if (session?.user) {
-        await loadDecisionHistory(session.user)
+      if (mounted && authInitialized) {
+        const newUser = session?.user ?? null
+
+        if (JSON.stringify(user) !== JSON.stringify(newUser)) {
+          setUser(newUser)
+          setLoading(false)
+
+          if (newUser) {
+            await loadDecisionHistory(newUser)
+          }
+        }
       }
     })
 
-    return () => subscription.unsubscribe()
-  }, [supabase, loadDecisionHistory]) // Include memoized supabase in deps
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [supabase])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -92,7 +118,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
     if (user.user_metadata?.firstName) {
       return user.user_metadata.firstName
     }
-    // Extract first part of email as fallback
     const emailName = user.email?.split("@")[0] || "Utilisateur"
     return emailName.charAt(0).toUpperCase() + emailName.slice(1)
   }
@@ -103,7 +128,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
     } else {
       await loadDecision(decisionId)
     }
-    onToggle() // Close sidebar on mobile after selection
+    onToggle()
   }
 
   const formatDecisionTitle = (title: string | null | undefined) => {
@@ -146,10 +171,9 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
     await pinDecision(user, decisionId)
   }
 
-  if (loading) {
+  if (loading && !authInitialized) {
     return (
       <>
-        {/* Overlay */}
         {isOpen && (
           <button
             type="button"
@@ -165,7 +189,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
           />
         )}
 
-        {/* Sidebar */}
         <div
           className={`
           fixed top-0 left-0 h-full w-80 bg-white dark:bg-gray-900 shadow-lg z-50 transform transition-transform duration-300 ease-in-out
@@ -191,7 +214,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
 
   return (
     <>
-      {/* Overlay */}
       {isOpen && (
         <button
           type="button"
@@ -207,7 +229,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
         />
       )}
 
-      {/* Sidebar */}
       <div
         className={`
         fixed top-0 left-0 h-full w-80 bg-card shadow-lg z-50 transform transition-transform duration-300 ease-in-out
@@ -215,7 +236,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
       `}
       >
         <div className="flex flex-col h-full">
-          {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border">
             <h2 className="text-lg font-semibold text-foreground">Menu</h2>
             <Button variant="ghost" size="sm" onClick={onToggle}>
@@ -223,9 +243,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
             </Button>
           </div>
 
-          {/* Content */}
           <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-            {/* User Section */}
             {user ? (
               <Card>
                 <CardContent className="p-4">
@@ -257,7 +275,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
               </div>
             )}
 
-            {/* Recent Decisions Section */}
             {user && recentDecisions && recentDecisions.length > 0 && (
               <Card>
                 <CardContent className="p-4">
@@ -282,7 +299,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                       const negativeScore = Math.abs(
                         argumentsArray
                           .filter((arg) => arg?.weight < 0)
-                          .reduce((sum, arg) => sum + (arg?.weight || 0), 0), // Added initial value 0 to prevent reduce error on empty array
+                          .reduce((sum, arg) => sum + (arg?.weight || 0), 0),
                       )
                       const recommendation = getRecommendationColor(positiveScore, negativeScore)
 
@@ -295,7 +312,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                               : "bg-card border-border hover:border-border/60"
                           }`}
                         >
-                          {/* Rename input overlay */}
                           {renamingDecision === decision.id ? (
                             <div className="p-3">
                               <input
@@ -348,7 +364,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                                 </div>
                               </button>
 
-                              {/* Context menu */}
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
@@ -394,7 +409,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
               </Card>
             )}
 
-            {/* Settings */}
             <Card>
               <CardContent className="p-4">
                 <h3 className="font-medium text-card-foreground mb-3 flex items-center gap-2">
@@ -403,7 +417,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                 </h3>
 
                 <div className="space-y-3">
-                  {/* Dark Mode Toggle */}
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Mode sombre</span>
                     <Button
@@ -419,7 +432,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
               </CardContent>
             </Card>
 
-            {/* Stats (if user is logged in) */}
             {user && (
               <Card>
                 <CardContent className="p-4">
@@ -444,7 +456,6 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
             )}
           </div>
 
-          {/* Footer */}
           {user && (
             <div className="p-4 border-t border-border">
               <Button

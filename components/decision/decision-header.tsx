@@ -56,14 +56,10 @@ export function DecisionHeader({
         <div className="flex items-center justify-between">
           {user && currentDecision.title.trim() && (
             <div className="flex items-center text-sm text-muted-foreground">
-              {saving ? (
-                <span className="text-blue-600">💾 Sauvegarde automatique...</span>
-              ) : (
-                <span className="text-green-600">✅ Sauvegardé automatiquement</span>
-              )}
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+              Sauvegarde automatique
             </div>
           )}
-
           <Button onClick={onCreateNew} variant="outline" className="ml-auto bg-transparent">
             Nouvelle décision
           </Button>
