@@ -116,7 +116,7 @@ export function ArgumentsSection({
             </div>
           </div>
 
-          <Button onClick={onAddArgument} disabled={!newArgument.text.trim()} className="w-full">
+          <Button onClick={onAddArgument} disabled={!newArgument?.text?.trim()} className="w-full">
             <Plus className="w-4 h-4 mr-2" />
             Ajouter
           </Button>
@@ -135,7 +135,7 @@ export function ArgumentsSection({
           <CardContent className="space-y-4">
             <Button
               onClick={onGenerateSuggestions}
-              disabled={loadingSuggestions || !decisionTitle.trim()}
+              disabled={loadingSuggestions || !decisionTitle?.trim()}
               variant="outline"
               className="w-full bg-transparent"
             >
