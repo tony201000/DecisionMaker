@@ -1,9 +1,10 @@
 "use client"
 
 import type { User } from "@supabase/supabase-js"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { AISuggestion, Argument, Decision, SavedDecision } from "@/types/decision"
+import { useToast } from "@/hooks/use-toast"
 
 export function useDecision() {
   const [currentDecision, setCurrentDecision] = useState<Decision>({
@@ -18,15 +19,17 @@ export function useDecision() {
   const [loadingHistory, setLoadingHistory] = useState(false)
 
   const supabase = useMemo(() => createClient(), [])
+  const { addToast } = useToast()
 
-  const loadDecisionHistory = async (user: User | null) => {
-    if (!user) return
+  const loadDecisionHistory = useCallback(
+    async (user: User | null) => {
+      if (!user) return
 
-    setLoadingHistory(true)
-    try {
-      const { data: decisions, error } = await supabase
-        .from("decisions")
-        .select(`
+      setLoadingHistory(true)
+      try {
+        const { data: decisions, error } = await supabase
+          .from("decisions")
+          .select(`
           id,
           title,
           description,
@@ -36,19 +39,25 @@ export function useDecision() {
             weight
           )
         `)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
 
-      if (error) throw error
+        if (error) throw error
 
-      setSavedDecisions(decisions || [])
-    } catch (error) {
-      console.error("Error loading decision history:", error)
-      alert("Erreur lors du chargement de l'historique")
-    } finally {
-      setLoadingHistory(false)
-    }
-  }
+        setSavedDecisions(decisions || [])
+      } catch (error) {
+        console.error("Error loading decision history:", error)
+        addToast({
+          title: "Erreur",
+          description: "Erreur lors du chargement de l'historique",
+          variant: "destructive",
+        })
+      } finally {
+        setLoadingHistory(false)
+      }
+    },
+    [supabase, addToast],
+  )
 
   const loadDecision = async (decisionIdOrObject: string | SavedDecision, setArgs?: (args: Argument[]) => void) => {
     try {
@@ -81,13 +90,21 @@ export function useDecision() {
 
           if (error) {
             console.error("Error loading decision by ID:", error)
-            alert("Erreur lors du chargement de la décision")
+            addToast({
+              title: "Erreur",
+              description: "Erreur lors du chargement de la décision",
+              variant: "destructive",
+            })
             return
           }
 
           if (!data) {
             console.error("Decision not found:", decisionId)
-            alert("Décision introuvable")
+            addToast({
+              title: "Erreur",
+              description: "Décision introuvable",
+              variant: "destructive",
+            })
             return
           }
 
@@ -121,7 +138,11 @@ export function useDecision() {
       return loadedArgs
     } catch (error) {
       console.error("Error in loadDecision:", error)
-      alert("Erreur lors du chargement de la décision")
+      addToast({
+        title: "Erreur",
+        description: "Erreur lors du chargement de la décision",
+        variant: "destructive",
+      })
     }
   }
 
@@ -137,12 +158,20 @@ export function useDecision() {
 
   const saveDecision = async (user: User | null, args: Argument[]) => {
     if (!user) {
-      alert("Vous devez être connecté pour sauvegarder une décision")
+      addToast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour sauvegarder une décision",
+        variant: "destructive",
+      })
       return
     }
 
     if (!currentDecision.title.trim()) {
-      alert("Veuillez donner un titre à votre décision")
+      addToast({
+        title: "Titre requis",
+        description: "Veuillez donner un titre à votre décision",
+        variant: "destructive",
+      })
       return
     }
 
@@ -176,10 +205,18 @@ export function useDecision() {
 
       setCurrentDecision((prev) => ({ ...prev, id: decisionData.id }))
       await loadDecisionHistory(user)
-      alert("Décision sauvegardée avec succès !")
+      addToast({
+        title: "Succès",
+        description: "Décision sauvegardée avec succès !",
+        variant: "success",
+      })
     } catch (error) {
       console.error("Error saving decision:", error)
-      alert("Erreur lors de la sauvegarde")
+      addToast({
+        title: "Erreur",
+        description: "Erreur lors de la sauvegarde",
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -187,7 +224,11 @@ export function useDecision() {
 
   const generateSuggestions = async (args: Argument[]) => {
     if (!currentDecision.title.trim()) {
-      alert("Veuillez d'abord donner un titre à votre décision")
+      addToast({
+        title: "Titre requis",
+        description: "Veuillez d'abord donner un titre à votre décision",
+        variant: "destructive",
+      })
       return
     }
 
@@ -213,7 +254,11 @@ export function useDecision() {
       setAiSuggestions(data.suggestions || [])
     } catch (error) {
       console.error("Error generating suggestions:", error)
-      alert("Erreur lors de la génération des suggestions")
+      addToast({
+        title: "Erreur",
+        description: "Erreur lors de la génération des suggestions",
+        variant: "destructive",
+      })
     } finally {
       setLoadingSuggestions(false)
     }
@@ -349,9 +394,19 @@ export function useDecision() {
           arguments: [],
         })
       }
+
+      addToast({
+        title: "Succès",
+        description: "Décision supprimée avec succès",
+        variant: "success",
+      })
     } catch (error) {
       console.error("Error deleting decision:", error)
-      console.error("Erreur lors de la suppression")
+      addToast({
+        title: "Erreur",
+        description: "Erreur lors de la suppression",
+        variant: "destructive",
+      })
     }
   }
 
@@ -372,7 +427,11 @@ export function useDecision() {
       await loadDecisionHistory(user)
     } catch (error) {
       console.error("Error renaming decision:", error)
-      alert("Erreur lors du renommage")
+      addToast({
+        title: "Erreur",
+        description: "Erreur lors du renommage",
+        variant: "destructive",
+      })
     }
   }
 
@@ -392,7 +451,11 @@ export function useDecision() {
       await loadDecisionHistory(user)
     } catch (error) {
       console.error("Error pinning decision:", error)
-      alert("Erreur lors de l'épinglage")
+      addToast({
+        title: "Erreur",
+        description: "Erreur lors de l'épinglage",
+        variant: "destructive",
+      })
     }
   }
 

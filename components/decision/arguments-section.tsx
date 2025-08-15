@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -8,6 +9,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash2, Sparkles, Edit2, Check, X } from "lucide-react"
 import { useRef, useEffect, useState } from "react"
 import type { Argument, AISuggestion } from "@/types/decision"
+import { validateArgument } from "@/lib/validation"
+import { DECISION_CONSTANTS } from "@/lib/constants"
+import { useToast } from "@/hooks/use-toast"
 
 interface ArgumentsSectionProps {
   newArgument: { text: string; weight: number }
@@ -23,7 +27,7 @@ interface ArgumentsSectionProps {
   onAddSuggestion: (suggestion: AISuggestion) => void
 }
 
-export function ArgumentsSection({
+export const ArgumentsSection = React.memo(function ArgumentsSection({
   newArgument,
   setNewArgument,
   onAddArgument,
@@ -40,6 +44,9 @@ export function ArgumentsSection({
   const [editingArgument, setEditingArgument] = useState<string | null>(null)
   const [editingText, setEditingText] = useState("")
   const [editingSuggestions, setEditingSuggestions] = useState<{ [key: number]: { text: string; weight: number } }>({})
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
+
+  const { addToast } = useToast()
 
   const ratings = Array.from({ length: 21 }, (_, i) => i - 10)
 
@@ -135,6 +142,23 @@ export function ArgumentsSection({
     }
   }, [newArgument.weight, ratings])
 
+  const handleAddArgument = () => {
+    const validation = validateArgument(newArgument.text, newArgument.weight)
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors)
+      addToast({
+        title: "Erreur de validation",
+        description: validation.errors[0],
+        variant: "destructive",
+      })
+      return
+    }
+    setValidationErrors([])
+    onAddArgument()
+  }
+
+  const remainingChars = DECISION_CONSTANTS.MAX_ARGUMENT_LENGTH - newArgument.text.length
+
   return (
     <div className="space-y-6">
       {/* Add New Argument */}
@@ -144,18 +168,39 @@ export function ArgumentsSection({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Argument</Label>
+            <div className="flex justify-between items-center">
+              <Label>Argument</Label>
+              <span className={`text-xs ${remainingChars < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                {remainingChars} caractères restants
+              </span>
+            </div>
             <Textarea
               placeholder="Décrivez votre argument..."
               value={newArgument.text}
               onChange={(e) => setNewArgument({ ...newArgument, text: e.target.value })}
               rows={2}
+              maxLength={DECISION_CONSTANTS.MAX_ARGUMENT_LENGTH}
+              aria-describedby="argument-help"
+              aria-invalid={validationErrors.length > 0}
             />
+            <div id="argument-help" className="text-xs text-muted-foreground">
+              Décrivez un point positif ou négatif concernant votre décision
+            </div>
+            {validationErrors.length > 0 && (
+              <div className="text-xs text-destructive" role="alert">
+                {validationErrors[0]}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label>Note (-10 à +10)</Label>
-            <div ref={sliderRef} className="flex gap-1 overflow-x-auto pb-2">
+            <div
+              ref={sliderRef}
+              className="flex gap-1 overflow-x-auto pb-2"
+              role="radiogroup"
+              aria-label="Sélectionner une note de -10 à +10"
+            >
               {ratings.map((rating) => (
                 <button
                   key={rating}
@@ -165,6 +210,9 @@ export function ArgumentsSection({
                     ${getGradient(rating)}
                     ${newArgument.weight === rating ? "ring-2 ring-primary scale-110" : "hover:scale-105"}
                   `}
+                  role="radio"
+                  aria-checked={newArgument.weight === rating}
+                  aria-label={`Note ${rating}`}
                 >
                   {rating}
                 </button>
@@ -172,7 +220,11 @@ export function ArgumentsSection({
             </div>
           </div>
 
-          <Button onClick={onAddArgument} disabled={!newArgument?.text?.trim()} className="w-full">
+          <Button
+            onClick={handleAddArgument}
+            disabled={!newArgument?.text?.trim() || remainingChars < 0}
+            className="w-full"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Ajouter
           </Button>
@@ -221,7 +273,7 @@ export function ArgumentsSection({
                                 className={`
                                   w-8 h-8 rounded text-xs font-medium transition-all duration-200 flex-shrink-0
                                   ${getGradient(rating)}
-                                  ${editingSuggestions[index].weight === rating ? "ring-2 ring-primary scale-110" : "hover:scale-105"}
+                                  ${editingSuggestions[index]?.weight === rating ? "ring-2 ring-primary scale-110" : "hover:scale-105"}
                                 `}
                               >
                                 {rating}
@@ -324,4 +376,4 @@ export function ArgumentsSection({
       </Card>
     </div>
   )
-}
+})
