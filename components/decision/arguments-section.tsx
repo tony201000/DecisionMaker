@@ -276,13 +276,13 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
                               const gradientClass = getGradient(rating)
                               const isSelected = editingSuggestions[index]?.weight === rating
                               const selectionClass = isSelected ? "ring-2 ring-primary scale-110" : "hover:scale-105"
-                              const className = `${baseClasses} ${gradientClass} ${selectionClass}`
+                              const finalClassName = baseClasses + " " + gradientClass + " " + selectionClass
 
                               return (
                                 <button
                                   key={rating}
                                   onClick={() => updateSuggestionEdit(index, "weight", rating)}
-                                  className={className}
+                                  className={finalClassName}
                                 >
                                   {rating}
                                 </button>
