@@ -266,19 +266,24 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
                         <div className="flex items-center gap-2">
                           <Label className="text-sm">Note:</Label>
                           <div className="flex gap-1 overflow-x-auto">
-                            {ratings.slice(0, 11).map((rating) => (
-                              <button
-                                key={rating}
-                                onClick={() => updateSuggestionEdit(index, "weight", rating)}
-                                className={`
-                                  w-8 h-8 rounded text-xs font-medium transition-all duration-200 flex-shrink-0
-                                  ${getGradient(rating)}
-                                  ${editingSuggestions[index]?.weight === rating ? "ring-2 ring-primary scale-110" : "hover:scale-105"}
-                                `}
-                              >
-                                {rating}
-                              </button>
-                            ))}
+                            {ratings.slice(0, 11).map((rating) => {
+                              const baseClasses =
+                                "w-8 h-8 rounded text-xs font-medium transition-all duration-200 flex-shrink-0"
+                              const gradientClass = getGradient(rating)
+                              const isSelected = editingSuggestions[index]?.weight === rating
+                              const selectionClass = isSelected ? "ring-2 ring-primary scale-110" : "hover:scale-105"
+                              const className = `${baseClasses} ${gradientClass} ${selectionClass}`
+
+                              return (
+                                <button
+                                  key={rating}
+                                  onClick={() => updateSuggestionEdit(index, "weight", rating)}
+                                  className={className}
+                                >
+                                  {rating}
+                                </button>
+                              )
+                            })}
                           </div>
                         </div>
                         <div className="flex gap-2">
