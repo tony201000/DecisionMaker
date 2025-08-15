@@ -90,12 +90,14 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("[v0] Auth state change:", event, !!session?.user)
 
-      if (mounted && authInitialized) {
+      if (mounted) {
         const newUser = session?.user ?? null
 
+        // Only update if user actually changed to avoid unnecessary re-renders
         if (JSON.stringify(user) !== JSON.stringify(newUser)) {
           setUser(newUser)
           setLoading(false)
+          setAuthInitialized(true)
 
           if (newUser) {
             await loadDecisionHistory(newUser)
