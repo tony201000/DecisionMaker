@@ -16,11 +16,13 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { supabase } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 import { useDecision } from "@/hooks/use-decision"
+import { useArguments } from "@/hooks/use-arguments"
 
 interface SidebarProps {
   isOpen: boolean
@@ -30,9 +32,12 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: SidebarProps) {
+  const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const { recentDecisions, loadDecision, currentDecision } = useDecision()
+  const { setArgs } = useArguments()
+  const supabase = createClient()
 
   useEffect(() => {
     const getUser = async () => {
@@ -53,10 +58,11 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [supabase.auth])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
+    router.push("/")
   }
 
   const getUserDisplayName = (user: User) => {
@@ -69,7 +75,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
   }
 
   const handleDecisionSelect = async (decisionId: string) => {
-    await loadDecision(decisionId)
+    await loadDecision(decisionId, setArgs)
     onToggle() // Close sidebar on mobile after selection
   }
 

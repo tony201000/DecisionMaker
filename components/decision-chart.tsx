@@ -10,7 +10,9 @@ interface DecisionChartProps {
 }
 
 export function DecisionChart({ positiveScore, negativeScore }: DecisionChartProps) {
-  const totalScore = positiveScore + negativeScore
+  const safePositiveScore = Math.max(0, isFinite(positiveScore) ? positiveScore : 0)
+  const safeNegativeScore = Math.max(0, isFinite(negativeScore) ? negativeScore : 0)
+  const totalScore = safePositiveScore + safeNegativeScore
 
   // When negativeScore > positiveScore, needle should point left (negative angle)
   // When positiveScore > negativeScore, needle should point right (positive angle)
@@ -19,19 +21,20 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
     if (totalScore === 0) return 0 // Center position when no data
 
     // Calculate the difference ratio: -1 (all negative) to +1 (all positive)
-    const balance = (positiveScore - negativeScore) / totalScore
+    const balance = (safePositiveScore - safeNegativeScore) / totalScore
 
     // Map balance to angle: -90° (left/red) to +90° (right/green)
-    return balance * 90
-  }, [positiveScore, negativeScore, totalScore])
+    const angle = balance * 90
+    return Math.max(-90, Math.min(90, angle))
+  }, [safePositiveScore, safeNegativeScore, totalScore])
 
   // Determine recommendation based on 2:1 rule
   const recommendation = useMemo(() => {
     if (totalScore === 0) return { text: "Aucune donnée", color: "text-gray-500" }
-    if (positiveScore >= negativeScore * 2) return { text: "Favorable", color: "text-green-600" }
-    if (negativeScore >= positiveScore * 2) return { text: "Défavorable", color: "text-red-600" }
+    if (safePositiveScore >= safeNegativeScore * 2) return { text: "Favorable", color: "text-green-600" }
+    if (safeNegativeScore >= safePositiveScore * 2) return { text: "Défavorable", color: "text-red-600" }
     return { text: "Mitigé", color: "text-orange-600" }
-  }, [totalScore, positiveScore, negativeScore])
+  }, [totalScore, safePositiveScore, safeNegativeScore])
 
   // Create gradient stops for the semicircle
   const gradientId = "gaugeGradient"
@@ -111,7 +114,7 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
               {/* Negative Score Circle */}
               <div className="flex flex-col items-center">
                 <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  {negativeScore}
+                  {safeNegativeScore}
                 </div>
                 <p className="text-sm text-red-600 mt-2 font-medium">Négatifs</p>
               </div>
@@ -124,7 +127,7 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
               {/* Positive Score Circle */}
               <div className="flex flex-col items-center">
                 <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  {positiveScore}
+                  {safePositiveScore}
                 </div>
                 <p className="text-sm text-green-600 mt-2 font-medium">Positifs</p>
               </div>

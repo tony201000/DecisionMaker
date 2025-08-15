@@ -29,6 +29,8 @@ export function useDecision() {
   const [loadingHistory, setLoadingHistory] = useState(false)
   const supabase = createClient()
 
+  const recentDecisions = savedDecisions.slice(0, 10)
+
   const loadDecisionHistory = async (user: User | null) => {
     if (!user) return
 
@@ -60,7 +62,13 @@ export function useDecision() {
     }
   }
 
-  const loadDecision = (savedDecision: SavedDecision, setArgs: (args: Argument[]) => void) => {
+  const loadDecision = async (decisionId: string, setArgs: (args: Argument[]) => void) => {
+    const savedDecision = savedDecisions.find((d) => d.id === decisionId)
+    if (!savedDecision) {
+      console.error("Decision not found:", decisionId)
+      return
+    }
+
     setCurrentDecision({
       id: savedDecision.id,
       title: savedDecision.title,
@@ -190,6 +198,7 @@ export function useDecision() {
     aiSuggestions,
     loadingSuggestions,
     savedDecisions,
+    recentDecisions, // Add recentDecisions to return object
     loadingHistory,
     saveDecision,
     generateSuggestions,
