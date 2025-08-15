@@ -2,13 +2,49 @@
 
 import { ArrowRight, Star, Quote, Building, User, TrendingUp } from "lucide-react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+function SimpleButton({ children, variant = "default", size = "default", className = "", href, ...props }: any) {
+  const baseClasses =
+    "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background"
+
+  const variants = {
+    default: "bg-primary text-primary-foreground hover:bg-primary/90",
+    outline: "border border-input hover:bg-accent hover:text-accent-foreground",
+    ghost: "hover:bg-accent hover:text-accent-foreground",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+  }
+
+  const sizes = {
+    default: "h-10 py-2 px-4",
+    sm: "h-9 px-3 rounded-md",
+    lg: "h-11 px-8 rounded-md",
+  }
+
+  const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`
+
+  if (href) {
+    return (
+      <Link href={href} className={classes} {...props}>
+        {children}
+      </Link>
+    )
+  }
+
+  return (
+    <button className={classes} {...props}>
+      {children}
+    </button>
+  )
+}
+
+function SimpleCard({ children, className = "" }: any) {
+  return <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>{children}</div>
+}
 
 function SimpleHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center">
+      <div className="container flex h-14 max-w-screen-2xl items-center mx-auto px-4">
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <span className="font-bold text-xl">DecisionAI</span>
@@ -30,16 +66,12 @@ function SimpleHeader() {
             </Link>
           </nav>
           <div className="flex items-center space-x-2">
-            <Link href="/auth/login">
-              <Button variant="ghost" size="sm">
-                Connexion
-              </Button>
-            </Link>
-            <Link href="/demo">
-              <Button size="sm" className="bg-accent hover:bg-accent/90">
-                Démo
-              </Button>
-            </Link>
+            <SimpleButton variant="ghost" size="sm" href="/auth/login">
+              Connexion
+            </SimpleButton>
+            <SimpleButton size="sm" className="bg-accent hover:bg-accent/90" href="/demo">
+              Démo
+            </SimpleButton>
           </div>
         </div>
       </div>
@@ -140,17 +172,13 @@ export default function TestimonialsPage() {
               monde.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/demo">
-                <Button size="lg" className="bg-accent hover:bg-accent/90">
-                  Voir la démo
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Link href="/auth/sign-up">
-                <Button variant="outline" size="lg">
-                  Rejoindre nos clients
-                </Button>
-              </Link>
+              <SimpleButton size="lg" className="bg-accent hover:bg-accent/90" href="/demo">
+                Voir la démo
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </SimpleButton>
+              <SimpleButton variant="outline" size="lg" href="/auth/sign-up">
+                Rejoindre nos clients
+              </SimpleButton>
             </div>
           </div>
         </div>
@@ -181,11 +209,11 @@ export default function TestimonialsPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card
+              <SimpleCard
                 key={index}
                 className="relative group hover:shadow-xl transition-all duration-300 border-border/50 hover:border-accent/50"
               >
-                <CardHeader className="space-y-4">
+                <div className="p-6 space-y-4">
                   <div className="flex items-center space-x-4">
                     <img
                       src={testimonial.avatar || "/placeholder.svg"}
@@ -203,8 +231,8 @@ export default function TestimonialsPage() {
                       <Star key={i} className="w-4 h-4 fill-accent text-accent" />
                     ))}
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                </div>
+                <div className="px-6 pb-6 space-y-4">
                   <div className="relative">
                     <Quote className="absolute -top-2 -left-2 w-6 h-6 text-accent/20" />
                     <p className="text-muted-foreground italic pl-4">"{testimonial.text}"</p>
@@ -212,8 +240,8 @@ export default function TestimonialsPage() {
                   <div className="p-3 bg-accent/5 rounded-lg border border-accent/20">
                     <p className="text-sm font-semibold text-accent">{testimonial.highlight}</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </SimpleCard>
             ))}
           </div>
         </div>
@@ -239,27 +267,29 @@ export default function TestimonialsPage() {
       {/* Share Experience Section */}
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card className="bg-gradient-to-br from-accent/5 to-primary/5 border-accent/20">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-card-foreground">Partagez votre expérience</CardTitle>
-              <CardDescription>Votre retour nous aide à améliorer continuellement notre plateforme</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center space-y-6">
+          <SimpleCard className="bg-gradient-to-br from-accent/5 to-primary/5 border-accent/20">
+            <div className="p-6 text-center">
+              <h3 className="text-2xl font-semibold text-card-foreground mb-2">Partagez votre expérience</h3>
+              <p className="text-muted-foreground mb-6">
+                Votre retour nous aide à améliorer continuellement notre plateforme
+              </p>
+            </div>
+            <div className="px-6 pb-6 text-center space-y-6">
               <p className="text-muted-foreground">
                 Vous utilisez déjà DecisionAI ? Partagez votre expérience avec notre communauté et aidez d'autres
                 professionnels à découvrir les bénéfices de notre solution.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-accent hover:bg-accent/90">
+                <SimpleButton size="lg" className="bg-accent hover:bg-accent/90">
                   Laisser un témoignage
                   <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-                <Button variant="outline" size="lg">
+                </SimpleButton>
+                <SimpleButton variant="outline" size="lg">
                   Contacter le support
-                </Button>
+                </SimpleButton>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </SimpleCard>
         </div>
       </section>
 
@@ -272,21 +302,18 @@ export default function TestimonialsPage() {
               Commencez dès aujourd'hui à transformer vos décisions avec DecisionAI.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/demo">
-                <Button size="lg" variant="secondary" className="bg-accent hover:bg-accent/90">
-                  Essayer gratuitement
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Link href="/auth/sign-up">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent"
-                >
-                  Créer un compte
-                </Button>
-              </Link>
+              <SimpleButton size="lg" variant="secondary" className="bg-accent hover:bg-accent/90" href="/demo">
+                Essayer gratuitement
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </SimpleButton>
+              <SimpleButton
+                size="lg"
+                variant="outline"
+                className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent"
+                href="/auth/sign-up"
+              >
+                Créer un compte
+              </SimpleButton>
             </div>
           </div>
         </div>
