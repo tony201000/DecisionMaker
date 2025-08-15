@@ -196,7 +196,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
             )}
 
             {/* Recent Decisions Section */}
-            {user && recentDecisions.length > 0 && (
+            {user && recentDecisions && recentDecisions.length > 0 && (
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -211,7 +211,7 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
                     </Link>
                   </div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {recentDecisions.slice(0, 10).map((decision) => {
+                    {(recentDecisions || []).slice(0, 10).map((decision) => {
                       const isActive = currentDecision?.id === decision.id
                       const positiveScore =
                         decision.arguments?.filter((arg) => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0) ||
@@ -299,12 +299,15 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode }: Side
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Décisions prises</span>
-                      <Badge variant="secondary">{recentDecisions.length}</Badge>
+                      <Badge variant="secondary">{recentDecisions?.length || 0}</Badge>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Arguments ajoutés</span>
                       <Badge variant="secondary">
-                        {recentDecisions.reduce((total, decision) => total + (decision.arguments?.length || 0), 0)}
+                        {(recentDecisions || []).reduce(
+                          (total, decision) => total + (decision.arguments?.length || 0),
+                          0,
+                        )}
                       </Badge>
                     </div>
                   </div>
