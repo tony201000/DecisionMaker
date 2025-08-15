@@ -1,38 +1,35 @@
-import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
-import type React from "react";
-import "./globals.css";
+import type { Metadata } from "next"
+import { Inter, Space_Grotesk } from "next/font/google"
+import type React from "react"
+import "./globals.css"
 
 const inter = Inter({
-	subsets: ["latin"],
-	display: "swap",
-	variable: "--font-inter",
-});
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+})
 
-const playfair = Playfair_Display({
-	subsets: ["latin"],
-	display: "swap",
-	variable: "--font-playfair",
-});
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-space-grotesk",
+})
 
 export const metadata: Metadata = {
-	title: "Plateforme d'Aide à la Décision",
-	description:
-		"Outil de prise de décision basé sur la méthode de Seymour Schulich",
-	generator: "v0.app",
-};
+  title: "DecisionAI - Plateforme d'Aide à la Décision",
+  description:
+    "Prenez des décisions éclairées avec l'IA. Méthode Schulich enrichie par l'intelligence artificielle pour analyser vos arguments et optimiser vos choix.",
+  generator: "v0.app",
+}
 
 export default function RootLayout({
-	children,
+  children,
 }: Readonly<{
-	children: React.ReactNode;
+  children: React.ReactNode
 }>) {
-	return (
-		<html
-			lang="fr"
-			className={`${inter.variable} ${playfair.variable} antialiased`}
-		>
-			<body className="transition-colors duration-300">{children}</body>
-		</html>
-	);
+  return (
+    <html lang="fr" className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
+      <body className="transition-colors duration-300">{children}</body>
+    </html>
+  )
 }
