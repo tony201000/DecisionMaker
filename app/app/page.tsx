@@ -4,6 +4,7 @@ import { Menu } from "lucide-react"
 import { useEffect, useState } from "react"
 import { ArgumentsSection } from "@/components/decision/arguments-section"
 import { DecisionHeader } from "@/components/decision/decision-header"
+import { DecisionHistory } from "@/components/decision/decision-history"
 import { ResultsSection } from "@/components/decision/results-section"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,8 @@ export default function DecisionMakerPlatform() {
     positiveScore,
     negativeScore,
     sortedArguments,
+    setArgs,
+    clearArgs,
   } = useArguments()
 
   const {
@@ -37,9 +40,14 @@ export default function DecisionMakerPlatform() {
     saving,
     aiSuggestions,
     loadingSuggestions,
+    savedDecisions,
+    loadingHistory,
     saveDecision,
     generateSuggestions,
     addSuggestionAsArgument,
+    loadDecisionHistory,
+    loadDecision,
+    createNewDecision,
   } = useDecision()
 
   useEffect(() => {
@@ -56,6 +64,12 @@ export default function DecisionMakerPlatform() {
     }
   }, [isDarkMode, isMounted])
 
+  useEffect(() => {
+    if (user) {
+      loadDecisionHistory(user)
+    }
+  }, [user])
+
   const handleSaveDecision = () => {
     saveDecision(user, args)
   }
@@ -66,6 +80,14 @@ export default function DecisionMakerPlatform() {
 
   const handleAddSuggestion = (suggestion: AISuggestion) => {
     addSuggestionAsArgument(suggestion, addArgumentDirectly)
+  }
+
+  const handleLoadDecision = (decision: any) => {
+    loadDecision(decision, setArgs)
+  }
+
+  const handleCreateNew = () => {
+    createNewDecision(clearArgs)
   }
 
   return (
@@ -96,6 +118,17 @@ export default function DecisionMakerPlatform() {
               <h1 className="text-3xl font-bold text-foreground">Aide à la Décision</h1>
               <p className="text-sm text-muted-foreground">Méthode Schulich : pondérez vos arguments</p>
             </div>
+
+            <DecisionHistory
+              user={user}
+              savedDecisions={savedDecisions}
+              loadingHistory={loadingHistory}
+              onLoadDecisionHistory={loadDecisionHistory}
+              onLoadDecision={handleLoadDecision}
+              onCreateNew={handleCreateNew}
+              setArgs={setArgs}
+              clearArgs={clearArgs}
+            />
 
             <DecisionHeader
               currentDecision={currentDecision}

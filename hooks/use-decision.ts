@@ -5,6 +5,17 @@ import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { AISuggestion, Argument, Decision } from "@/types/decision"
 
+interface SavedDecision {
+  id: string
+  title: string
+  description: string
+  created_at: string
+  arguments: Array<{
+    text: string
+    weight: number
+  }>
+}
+
 export function useDecision() {
   const [currentDecision, setCurrentDecision] = useState<Decision>({
     title: "Nouvelle décision",
@@ -14,7 +25,68 @@ export function useDecision() {
   const [saving, setSaving] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<Array<AISuggestion>>([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+  const [savedDecisions, setSavedDecisions] = useState<SavedDecision[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
   const supabase = createClient()
+
+  const loadDecisionHistory = async (user: User | null) => {
+    if (!user) return
+
+    setLoadingHistory(true)
+    try {
+      const { data: decisions, error } = await supabase
+        .from("decisions")
+        .select(`
+          id,
+          title,
+          description,
+          created_at,
+          arguments (
+            text,
+            weight
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+
+      if (error) throw error
+
+      setSavedDecisions(decisions || [])
+    } catch (error) {
+      console.error("Error loading decision history:", error)
+      alert("Erreur lors du chargement de l'historique")
+    } finally {
+      setLoadingHistory(false)
+    }
+  }
+
+  const loadDecision = (savedDecision: SavedDecision, setArgs: (args: Argument[]) => void) => {
+    setCurrentDecision({
+      id: savedDecision.id,
+      title: savedDecision.title,
+      description: savedDecision.description,
+      arguments: [],
+    })
+
+    // Convert saved arguments to current format
+    const loadedArgs: Argument[] = savedDecision.arguments.map((arg, index) => ({
+      id: `${savedDecision.id}-${index}`,
+      text: arg.text,
+      weight: arg.weight,
+    }))
+
+    setArgs(loadedArgs)
+  }
+
+  const createNewDecision = (clearArgs: () => void) => {
+    setCurrentDecision({
+      title: "Nouvelle décision",
+      description: "",
+      arguments: [],
+    })
+    clearArgs()
+    setAiSuggestions([])
+  }
 
   const saveDecision = async (user: User | null, args: Argument[]) => {
     if (!user) {
@@ -56,6 +128,7 @@ export function useDecision() {
       }
 
       setCurrentDecision((prev) => ({ ...prev, id: decisionData.id }))
+      await loadDecisionHistory(user)
       alert("Décision sauvegardée avec succès !")
     } catch (error) {
       console.error("Error saving decision:", error)
@@ -116,8 +189,13 @@ export function useDecision() {
     saving,
     aiSuggestions,
     loadingSuggestions,
+    savedDecisions,
+    loadingHistory,
     saveDecision,
     generateSuggestions,
     addSuggestionAsArgument,
+    loadDecisionHistory,
+    loadDecision,
+    createNewDecision,
   }
 }
