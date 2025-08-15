@@ -28,39 +28,37 @@ export function CTASection({ user, loading }: CTASectionProps) {
               </div>
             ) : user ? (
               <>
-                <Link href="/app">
-                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+                  <Link href="/app">
                     Accéder à l'application
                     <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-                <Link href="/app">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
-                  >
-                    Nouvelle analyse
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
+                >
+                  <Link href="/app">Nouvelle analyse</Link>
+                </Button>
               </>
             ) : (
               <>
-                <Link href="/auth/sign-up">
-                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+                  <Link href="/auth/sign-up">
                     Commencer maintenant
                     <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-                <Link href="/app">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
-                  >
-                    Essayer la démo
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
+                >
+                  <Link href="/demo">Essayer la démo</Link>
+                </Button>
               </>
             )}
           </div>

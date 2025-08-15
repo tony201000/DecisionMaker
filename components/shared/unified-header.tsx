@@ -45,17 +45,15 @@ export function UnifiedHeader() {
             >
               Témoignages
             </Link>
-            <Link href="/auth/login">
-              <Button variant="outline" size="sm">
-                Se connecter
-              </Button>
-            </Link>
-            <Link href="/demo">
-              <Button size="sm" className="bg-accent hover:bg-accent/90">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/auth/login">Se connecter</Link>
+            </Button>
+            <Button asChild size="sm" className="bg-accent hover:bg-accent/90">
+              <Link href="/demo">
                 Voir la démo
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </nav>
         </div>
       </div>

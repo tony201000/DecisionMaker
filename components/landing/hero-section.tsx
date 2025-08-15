@@ -34,31 +34,27 @@ export function HeroSection({ user, loading }: HeroSectionProps) {
                 </div>
               ) : user ? (
                 <>
-                  <Link href="/app">
-                    <Button size="lg" className="w-full sm:w-auto">
+                  <Button asChild size="lg" className="w-full sm:w-auto">
+                    <Link href="/app">
                       Accéder à l'application
                       <ArrowRight className="w-5 h-5 ml-2" />
-                    </Button>
-                  </Link>
-                  <Link href="/demo">
-                    <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
-                      Voir la démo
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
+                    <Link href="/demo">Voir la démo</Link>
+                  </Button>
                 </>
               ) : (
                 <>
-                  <Link href="/auth/sign-up">
-                    <Button size="lg" className="w-full sm:w-auto">
+                  <Button asChild size="lg" className="w-full sm:w-auto">
+                    <Link href="/auth/sign-up">
                       Commencer gratuitement
                       <ArrowRight className="w-5 h-5 ml-2" />
-                    </Button>
-                  </Link>
-                  <Link href="/demo">
-                    <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
-                      Voir la démo
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
+                    <Link href="/demo">Voir la démo</Link>
+                  </Button>
                 </>
               )}
             </div>

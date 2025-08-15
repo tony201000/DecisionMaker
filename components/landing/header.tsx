@@ -36,25 +36,23 @@ export function Header({ user, loading }: HeaderProps) {
                 <div className="w-24 h-8 bg-muted animate-pulse rounded"></div>
               </div>
             ) : user ? (
-              <Link href="/app">
-                <Button size="sm">
+              <Button asChild size="sm">
+                <Link href="/app">
                   Accéder à l'application
                   <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             ) : (
               <>
-                <Link href="/auth/login">
-                  <Button variant="outline" size="sm">
-                    Se connecter
-                  </Button>
-                </Link>
-                <Link href="/auth/sign-up">
-                  <Button size="sm">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/auth/login">Se connecter</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href="/auth/sign-up">
                     Commencer
                     <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </>
             )}
           </nav>
