@@ -280,7 +280,9 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                         .filter((arg) => arg?.weight > 0)
                         .reduce((sum, arg) => sum + (arg?.weight || 0), 0)
                       const negativeScore = Math.abs(
-                        argumentsArray.filter((arg) => arg?.weight < 0).reduce((sum, arg) => sum + (arg?.weight || 0)),
+                        argumentsArray
+                          .filter((arg) => arg?.weight < 0)
+                          .reduce((sum, arg) => sum + (arg?.weight || 0), 0), // Added initial value 0 to prevent reduce error on empty array
                       )
                       const recommendation = getRecommendationColor(positiveScore, negativeScore)
 
