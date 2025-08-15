@@ -39,12 +39,14 @@ export default function DecisionMakerPlatform() {
     saving,
     aiSuggestions,
     loadingSuggestions,
-    saveDecision,
     generateSuggestions,
     addSuggestionAsArgument,
     createNewDecision,
     loadDecision,
     loadDecisionHistory,
+    updateDecisionTitle,
+    updateDecisionDescription,
+    autoSaveDecision,
   } = useDecision()
 
   useEffect(() => {
@@ -74,9 +76,11 @@ export default function DecisionMakerPlatform() {
     }
   }, [isDarkMode, isMounted])
 
-  const handleSaveDecision = () => {
-    saveDecision(user, args)
-  }
+  useEffect(() => {
+    if (user && currentDecision.title.trim()) {
+      autoSaveDecision(user, currentDecision, args)
+    }
+  }, [args, user, currentDecision, autoSaveDecision])
 
   const handleGenerateSuggestions = () => {
     generateSuggestions(args)
@@ -88,6 +92,14 @@ export default function DecisionMakerPlatform() {
 
   const handleCreateNew = () => {
     createNewDecision(clearArgs)
+  }
+
+  const handleTitleChange = (title: string) => {
+    updateDecisionTitle(user, title, args)
+  }
+
+  const handleDescriptionChange = (description: string) => {
+    updateDecisionDescription(user, description, args)
   }
 
   return (
@@ -122,10 +134,10 @@ export default function DecisionMakerPlatform() {
 
             <DecisionHeader
               currentDecision={currentDecision}
-              setCurrentDecision={setCurrentDecision}
+              onTitleChange={handleTitleChange}
+              onDescriptionChange={handleDescriptionChange}
               user={user}
               saving={saving}
-              onSave={handleSaveDecision}
               onCreateNew={handleCreateNew}
             />
 

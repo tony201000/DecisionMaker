@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import type { User } from "@supabase/supabase-js"
 import {
   LogIn,
@@ -13,6 +15,10 @@ import {
   FileText,
   History,
   ChevronRight,
+  MoreVertical,
+  Trash2,
+  Edit3,
+  Pin,
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState, useMemo } from "react"
@@ -21,6 +27,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/client"
 import { useDecision } from "@/hooks/use-decision"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface SidebarProps {
   isOpen: boolean
@@ -33,7 +40,18 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoadDecision }: SidebarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const { savedDecisions, loadDecision, currentDecision, getRecentDecisions, loadDecisionHistory } = useDecision()
+  const [renamingDecision, setRenamingDecision] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState("")
+  const {
+    savedDecisions,
+    loadDecision,
+    currentDecision,
+    getRecentDecisions,
+    loadDecisionHistory,
+    deleteDecision,
+    renameDecision,
+    pinDecision,
+  } = useDecision()
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -101,6 +119,32 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
   }
 
   const recentDecisions = getRecentDecisions(10)
+
+  const handleDeleteDecision = async (decisionId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette décision ?")) {
+      await deleteDecision(user, decisionId)
+    }
+  }
+
+  const handleRenameDecision = (decisionId: string, currentTitle: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setRenamingDecision(decisionId)
+    setRenameValue(currentTitle)
+  }
+
+  const handleRenameSubmit = async (decisionId: string) => {
+    if (renameValue.trim()) {
+      await renameDecision(user, decisionId, renameValue.trim())
+    }
+    setRenamingDecision(null)
+    setRenameValue("")
+  }
+
+  const handlePinDecision = async (decisionId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    await pinDecision(user, decisionId)
+  }
 
   if (loading) {
     return (
@@ -241,42 +285,106 @@ export function Sidebar({ isOpen, onToggle, isDarkMode, onToggleDarkMode, onLoad
                       const recommendation = getRecommendationColor(positiveScore, negativeScore)
 
                       return (
-                        <button
+                        <div
                           key={decision.id}
-                          onClick={() => handleDecisionSelect(decision.id)}
-                          className={`w-full text-left p-3 rounded-lg border transition-colors hover:bg-accent/50 ${
+                          className={`group relative w-full rounded-lg border transition-colors hover:bg-accent/50 ${
                             isActive
                               ? "bg-primary/10 border-primary/20"
                               : "bg-card border-border hover:border-border/60"
                           }`}
                         >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <FileText className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                                <p className="font-medium text-sm text-card-foreground truncate">
-                                  {formatDecisionTitle(decision.title)}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-xs font-medium ${recommendation}`}>
-                                  {recommendation === "text-green-600 dark:text-green-400"
-                                    ? "Favorable"
-                                    : recommendation === "text-red-600 dark:text-red-400"
-                                      ? "Défavorable"
-                                      : "Mitigé"}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {positiveScore}:{negativeScore}
-                                </span>
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(decision.updated_at || decision.created_at).toLocaleDateString("fr-FR")}
-                              </p>
+                          {/* Rename input overlay */}
+                          {renamingDecision === decision.id ? (
+                            <div className="p-3">
+                              <input
+                                type="text"
+                                value={renameValue}
+                                onChange={(e) => setRenameValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    handleRenameSubmit(decision.id)
+                                  } else if (e.key === "Escape") {
+                                    setRenamingDecision(null)
+                                  }
+                                }}
+                                onBlur={() => handleRenameSubmit(decision.id)}
+                                className="w-full px-2 py-1 text-sm bg-background border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                autoFocus
+                              />
                             </div>
-                            <ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                          </div>
-                        </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleDecisionSelect(decision.id)}
+                                className="w-full text-left p-3 rounded-lg"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <FileText className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                                      <p className="font-medium text-sm text-card-foreground truncate">
+                                        {formatDecisionTitle(decision.title)}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className={`text-xs font-medium ${recommendation}`}>
+                                        {recommendation === "text-green-600 dark:text-green-400"
+                                          ? "Favorable"
+                                          : recommendation === "text-red-600 dark:text-red-400"
+                                            ? "Défavorable"
+                                            : "Mitigé"}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">
+                                        {positiveScore}:{negativeScore}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {new Date(decision.updated_at || decision.created_at).toLocaleDateString("fr-FR")}
+                                    </p>
+                                  </div>
+                                  <ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                                </div>
+                              </button>
+
+                              {/* Context menu */}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute top-2 right-2 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <MoreVertical className="w-3 h-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40">
+                                  <DropdownMenuItem
+                                    onClick={(e) => handlePinDecision(decision.id, e)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Pin className="w-3 h-3 mr-2" />
+                                    Épingler
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(e) => handleRenameDecision(decision.id, decision.title || "", e)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Edit3 className="w-3 h-3 mr-2" />
+                                    Renommer
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(e) => handleDeleteDecision(decision.id, e)}
+                                    className="cursor-pointer text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="w-3 h-3 mr-2" />
+                                    Supprimer
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </>
+                          )}
+                        </div>
                       )
                     })}
                   </div>

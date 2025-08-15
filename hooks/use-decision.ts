@@ -3,7 +3,7 @@
 import type { User } from "@supabase/supabase-js"
 import { useState, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
-import type { AISuggestion, Argument, Decision } from "@/types/decision"
+import type { AISuggestion, Argument, Decision, SavedDecision } from "@/types/decision"
 
 export function useDecision() {
   const [currentDecision, setCurrentDecision] = useState<Decision>({
@@ -236,6 +236,157 @@ export function useDecision() {
     return decisions.slice(0, safeCount)
   }
 
+  const updateDecisionTitle = async (user: User | null, title: string, args: Argument[]) => {
+    setCurrentDecision((prev) => ({ ...prev, title }))
+
+    // Auto-save if title is not empty and user is logged in
+    if (user && title.trim()) {
+      await autoSaveDecision(user, { ...currentDecision, title }, args)
+    }
+  }
+
+  const updateDecisionDescription = async (user: User | null, description: string, args: Argument[]) => {
+    setCurrentDecision((prev) => ({ ...prev, description }))
+
+    // Auto-save if we have a title and user is logged in
+    if (user && currentDecision.title.trim()) {
+      await autoSaveDecision(user, { ...currentDecision, description }, args)
+    }
+  }
+
+  const autoSaveDecision = async (user: User | null, decision: Decision, args: Argument[]) => {
+    if (!user || !decision.title.trim()) return
+
+    try {
+      if (decision.id) {
+        // Update existing decision
+        const { error: decisionError } = await supabase
+          .from("decisions")
+          .update({
+            title: decision.title,
+            description: decision.description,
+          })
+          .eq("id", decision.id)
+
+        if (decisionError) throw decisionError
+
+        // Delete existing arguments and insert new ones
+        await supabase.from("arguments").delete().eq("decision_id", decision.id)
+
+        if (args.length > 0) {
+          const argumentsToInsert = args.map((arg) => ({
+            decision_id: decision.id,
+            text: arg.text,
+            weight: arg.weight,
+          }))
+
+          const { error: argumentsError } = await supabase.from("arguments").insert(argumentsToInsert)
+          if (argumentsError) throw argumentsError
+        }
+      } else {
+        // Create new decision
+        const { data: decisionData, error: decisionError } = await supabase
+          .from("decisions")
+          .insert({
+            user_id: user.id,
+            title: decision.title,
+            description: decision.description,
+          })
+          .select()
+          .single()
+
+        if (decisionError) throw decisionError
+
+        // Save arguments
+        if (args.length > 0) {
+          const argumentsToInsert = args.map((arg) => ({
+            decision_id: decisionData.id,
+            text: arg.text,
+            weight: arg.weight,
+          }))
+
+          const { error: argumentsError } = await supabase.from("arguments").insert(argumentsToInsert)
+          if (argumentsError) throw argumentsError
+        }
+
+        setCurrentDecision((prev) => ({ ...prev, id: decisionData.id }))
+      }
+
+      await loadDecisionHistory(user)
+    } catch (error) {
+      console.error("Error auto-saving decision:", error)
+    }
+  }
+
+  const deleteDecision = async (user: User | null, decisionId: string) => {
+    if (!user) return
+
+    try {
+      // Delete arguments first (foreign key constraint)
+      await supabase.from("arguments").delete().eq("decision_id", decisionId)
+
+      // Delete decision
+      const { error } = await supabase.from("decisions").delete().eq("id", decisionId)
+      if (error) throw error
+
+      // Refresh history
+      await loadDecisionHistory(user)
+
+      // If we're currently viewing this decision, create a new one
+      if (currentDecision.id === decisionId) {
+        setCurrentDecision({
+          title: "Nouvelle décision",
+          description: "",
+          arguments: [],
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting decision:", error)
+      alert("Erreur lors de la suppression")
+    }
+  }
+
+  const renameDecision = async (user: User | null, decisionId: string, newTitle: string) => {
+    if (!user || !newTitle.trim()) return
+
+    try {
+      const { error } = await supabase.from("decisions").update({ title: newTitle.trim() }).eq("id", decisionId)
+
+      if (error) throw error
+
+      // Update current decision if it's the one being renamed
+      if (currentDecision.id === decisionId) {
+        setCurrentDecision((prev) => ({ ...prev, title: newTitle.trim() }))
+      }
+
+      // Refresh history
+      await loadDecisionHistory(user)
+    } catch (error) {
+      console.error("Error renaming decision:", error)
+      alert("Erreur lors du renommage")
+    }
+  }
+
+  const pinDecision = async (user: User | null, decisionId: string) => {
+    if (!user) return
+
+    try {
+      // Update the decision with current timestamp to move it to top
+      const { error } = await supabase
+        .from("decisions")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", decisionId)
+
+      if (error) throw error
+
+      // Refresh history
+      await loadDecisionHistory(user)
+    } catch (error) {
+      console.error("Error pinning decision:", error)
+      alert("Erreur lors de l'épinglage")
+    }
+  }
+
   return {
     currentDecision,
     setCurrentDecision,
@@ -251,5 +402,11 @@ export function useDecision() {
     loadDecision,
     createNewDecision,
     getRecentDecisions, // Export safe recent decisions getter
+    updateDecisionTitle,
+    updateDecisionDescription,
+    autoSaveDecision,
+    deleteDecision,
+    renameDecision,
+    pinDecision,
   }
 }
