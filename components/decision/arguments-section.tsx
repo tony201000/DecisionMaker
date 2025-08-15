@@ -20,6 +20,7 @@ interface ArgumentsSectionProps {
   sortedArguments: Argument[]
   onRemoveArgument: (id: string) => void
   onUpdateArgumentWeight: (id: string, weight: number) => void
+  onUpdateArgumentText: (id: string, text: string) => void
   decisionTitle: string
   aiSuggestions: AISuggestion[]
   loadingSuggestions: boolean
@@ -34,6 +35,7 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
   sortedArguments,
   onRemoveArgument,
   onUpdateArgumentWeight,
+  onUpdateArgumentText,
   decisionTitle,
   aiSuggestions,
   loadingSuggestions,
@@ -82,7 +84,9 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
   const saveArgumentEdit = (argumentId: string) => {
     if (editingText.trim()) {
       // Update argument text (we'll need to add this to the parent component)
-      onUpdateArgumentWeight(argumentId, sortedArguments.find((a) => a.id === argumentId)?.weight || 0)
+      onUpdateArgumentText(argumentId, editingText)
+      const currentWeight = sortedArguments.find((a) => a.id === argumentId)?.weight || 0
+      onUpdateArgumentWeight(argumentId, currentWeight)
     }
     setEditingArgument(null)
     setEditingText("")
@@ -266,7 +270,7 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
                         <div className="flex items-center gap-2">
                           <Label className="text-sm">Note:</Label>
                           <div className="flex gap-1 overflow-x-auto">
-                            {ratings.slice(0, 11).map((rating) => {
+                            {ratings.map((rating) => {
                               const baseClasses =
                                 "w-8 h-8 rounded text-xs font-medium transition-all duration-200 flex-shrink-0"
                               const gradientClass = getGradient(rating)
