@@ -11,6 +11,7 @@ import { useArguments } from "@/hooks/use-arguments"
 import { useAuth } from "@/hooks/use-auth"
 import { useDecision } from "@/hooks/use-decision"
 import type { AISuggestion } from "@/types/decision"
+import { debounce } from "lodash"
 
 export default function DecisionMakerPlatform() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -39,11 +40,28 @@ export default function DecisionMakerPlatform() {
     saving,
     aiSuggestions,
     loadingSuggestions,
-    saveDecision,
     generateSuggestions,
     addSuggestionAsArgument,
     createNewDecision,
+    loadDecision,
+    loadDecisionHistory,
+    updateDecisionTitle,
+    updateDecisionDescription,
+    autoSaveDecision,
   } = useDecision()
+
+  useEffect(() => {
+    if (user) {
+      loadDecisionHistory(user)
+    }
+  }, [user, loadDecisionHistory])
+
+  const handleLoadDecision = async (decisionId: string) => {
+    const loadedArgs = await loadDecision(decisionId, setArgs)
+    if (loadedArgs) {
+      setArgs(loadedArgs)
+    }
+  }
 
   useEffect(() => {
     setIsMounted(true)
@@ -59,9 +77,15 @@ export default function DecisionMakerPlatform() {
     }
   }, [isDarkMode, isMounted])
 
-  const handleSaveDecision = () => {
-    saveDecision(user, args)
-  }
+  const debouncedAutoSaveDecision = debounce((user, currentDecision, args) => {
+    autoSaveDecision(user, currentDecision, args)
+  }, 1000)
+
+  useEffect(() => {
+    if (user && currentDecision.title.trim()) {
+      debouncedAutoSaveDecision(user, currentDecision, args)
+    }
+  }, [args, user, currentDecision])
 
   const handleGenerateSuggestions = () => {
     generateSuggestions(args)
@@ -75,6 +99,16 @@ export default function DecisionMakerPlatform() {
     createNewDecision(clearArgs)
   }
 
+  const handleTitleChange = (title: string) => {
+    updateDecisionTitle(user, title, args)
+    debouncedAutoSaveDecision(user, { ...currentDecision, title }, args)
+  }
+
+  const handleDescriptionChange = (description: string) => {
+    updateDecisionDescription(user, description, args)
+    debouncedAutoSaveDecision(user, { ...currentDecision, description }, args)
+  }
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
       <Sidebar
@@ -82,6 +116,7 @@ export default function DecisionMakerPlatform() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        onLoadDecision={handleLoadDecision}
       />
 
       <div className={`transition-all duration-300 ${sidebarOpen ? "ml-80" : "ml-0"}`}>
@@ -106,10 +141,10 @@ export default function DecisionMakerPlatform() {
 
             <DecisionHeader
               currentDecision={currentDecision}
-              setCurrentDecision={setCurrentDecision}
+              onTitleChange={handleTitleChange}
+              onDescriptionChange={handleDescriptionChange}
               user={user}
               saving={saving}
-              onSave={handleSaveDecision}
               onCreateNew={handleCreateNew}
             />
 
