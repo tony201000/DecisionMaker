@@ -40,9 +40,9 @@ export function HeroSection({ user, loading }: HeroSectionProps) {
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                   </Link>
-                  <Link href="/app">
+                  <Link href="/demo">
                     <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
-                      Nouvelle analyse
+                      Voir la démo
                     </Button>
                   </Link>
                 </>
@@ -54,7 +54,7 @@ export function HeroSection({ user, loading }: HeroSectionProps) {
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                   </Link>
-                  <Link href="/app">
+                  <Link href="/demo">
                     <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
                       Voir la démo
                     </Button>
@@ -64,11 +64,11 @@ export function HeroSection({ user, loading }: HeroSectionProps) {
             </div>
             <div className="flex items-center space-x-6 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-primary" />
+                <CheckCircle className="w-4 h-4 text-accent" />
                 <span>Gratuit pour commencer</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-primary" />
+                <CheckCircle className="w-4 h-4 text-accent" />
                 <span>Aucune carte requise</span>
               </div>
             </div>
@@ -82,11 +82,11 @@ export function HeroSection({ user, loading }: HeroSectionProps) {
                     <svg viewBox="0 0 200 100" className="w-full h-full">
                       <defs>
                         <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#ef4444" />
+                          <stop offset="0%" stopColor="#dc2626" />
                           <stop offset="25%" stopColor="#f97316" />
                           <stop offset="50%" stopColor="#eab308" />
                           <stop offset="75%" stopColor="#84cc16" />
-                          <stop offset="100%" stopColor="#22c55e" />
+                          <stop offset="100%" stopColor="#10b981" />
                         </linearGradient>
                       </defs>
                       <path
@@ -96,7 +96,7 @@ export function HeroSection({ user, loading }: HeroSectionProps) {
                         strokeWidth="12"
                         strokeLinecap="round"
                       />
-                      <line x1="100" y1="80" x2="100" y2="50" stroke="#164e63" strokeWidth="3" strokeLinecap="round" />
+                      <line x1="100" y1="80" x2="130" y2="55" stroke="#164e63" strokeWidth="3" strokeLinecap="round" />
                       <circle cx="100" cy="80" r="4" fill="#164e63" />
                     </svg>
                   </div>
