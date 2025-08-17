@@ -50,7 +50,7 @@ export function Header({ user, loading }: HeaderProps) {
                 asChild
                 size="sm"
               >
-                <Link href="/app">
+                <Link href="/platform">
                   Accéder à l'application
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>

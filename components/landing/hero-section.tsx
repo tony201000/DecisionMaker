@@ -39,7 +39,7 @@ export function HeroSection({ user, loading }: HeroSectionProps) {
                     size="lg"
                     className="w-full sm:w-auto"
                   >
-                    <Link href="/app">
+                    <Link href="/platform">
                       Accéder à l'application
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Link>

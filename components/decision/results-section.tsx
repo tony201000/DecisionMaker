@@ -1,5 +1,7 @@
 import { DecisionChart } from "@/components/decision-chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { RatioDisplay } from "@/components/ui/ratio-display"
+import { ScoreDisplay } from "@/components/ui/score-display"
 
 interface ResultsSectionProps {
   positiveScore: number
@@ -8,6 +10,8 @@ interface ResultsSectionProps {
 }
 
 export function ResultsSection({ positiveScore, negativeScore, argumentsCount }: ResultsSectionProps) {
+  const ratio = negativeScore > 0 ? positiveScore / negativeScore : Number.POSITIVE_INFINITY
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <DecisionChart
@@ -22,21 +26,20 @@ export function ResultsSection({ positiveScore, negativeScore, argumentsCount }:
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-sm text-muted-foreground">Score Positif</div>
-              <div className="text-2xl font-bold text-green-600">{positiveScore}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Score Négatif</div>
-              <div className="text-2xl font-bold text-red-600">{negativeScore}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Ratio</div>
-              <div className="text-2xl font-bold">
-                {negativeScore === 0 ? "∞" : (positiveScore / negativeScore).toFixed(1)}
-                :1
-              </div>
-            </div>
+            <ScoreDisplay
+              value={positiveScore}
+              label="Score Positif"
+              variant="positive"
+            />
+            <ScoreDisplay
+              value={negativeScore}
+              label="Score Négatif"
+              variant="negative"
+            />
+            <RatioDisplay
+              ratio={ratio}
+              className="text-center"
+            />
           </div>
 
           {argumentsCount === 0 ? (

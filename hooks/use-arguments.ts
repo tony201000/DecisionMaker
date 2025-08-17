@@ -1,71 +1,51 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import type { Argument } from "@/types/decision"
 
-interface NewArgument {
-  text: string
-  weight: number
-}
+export function useArguments(initialArguments: Argument[] = []) {
+  const [args, setArgs] = useState<Argument[]>(initialArguments)
 
-export function useArguments() {
-  const [args, setArgs] = useState<Argument[]>([])
-  const [newArgument, setNewArgument] = useState<NewArgument>({
-    text: "",
-    weight: 0
-  })
-
-  const addArgument = () => {
-    if (newArgument.text.trim()) {
-      const argument: Argument = {
-        id: `arg-${newArgument.text.slice(0, 10)}-${Date.now()}`,
-        text: newArgument.text.trim(),
-        weight: newArgument.weight
+  const addArgument = useCallback((argument: Omit<Argument, "id">) => {
+    if (argument.text.trim()) {
+      const newArgument: Argument = {
+        ...argument,
+        id: crypto.randomUUID()
       }
-      setArgs(prev => [...prev, argument].sort((a, b) => a.weight - b.weight))
-      setNewArgument({ text: "", weight: 0 })
+      setArgs(prev => [...prev, newArgument])
     }
-  }
+  }, [])
 
-  const addArgumentDirectly = (argument: Argument) => {
-    setArgs(prev => [...prev, argument].sort((a, b) => a.weight - b.weight))
-  }
-
-  const removeArgument = (id: string) => {
+  const removeArgument = useCallback((id: string) => {
     setArgs(prev => prev.filter(arg => arg.id !== id))
-  }
+  }, [])
 
-  const updateArgumentWeight = (id: string, weight: number) => {
-    setArgs(prev => prev.map(arg => (arg.id === id ? { ...arg, weight } : arg)).sort((a, b) => a.weight - b.weight))
-  }
+  const updateArgumentWeight = useCallback((id: string, weight: number) => {
+    setArgs(prev => prev.map(arg => (arg.id === id ? { ...arg, weight } : arg)))
+  }, [])
 
-  const setArgsDirectly = (newArgs: Argument[]) => {
-    setArgs(newArgs.sort((a, b) => a.weight - b.weight))
-  }
+  const setArguments = useCallback((newArgs: Argument[]) => {
+    setArgs(newArgs)
+  }, [])
 
-  const clearArgs = () => {
+  const clearArguments = useCallback(() => {
     setArgs([])
-    setNewArgument({ text: "", weight: 0 })
-  }
+  }, [])
 
-  // Calculs des scores
-  const positiveScore = args.filter(arg => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0)
+  const positiveScore = useMemo(() => args.filter(arg => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0), [args])
 
-  const negativeScore = Math.abs(args.filter(arg => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0))
+  const negativeScore = useMemo(() => Math.abs(args.filter(arg => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0)), [args])
 
-  const sortedArguments = [...args].sort((a, b) => a.weight - b.weight)
+  const sortedArguments = useMemo(() => [...args].sort((a, b) => a.weight - b.weight), [args])
 
   return {
     addArgument,
-    addArgumentDirectly,
     args,
-    clearArgs,
+    clearArguments,
     negativeScore,
-    newArgument,
     positiveScore,
     removeArgument,
-    setArgs: setArgsDirectly,
-    setNewArgument,
+    setArguments,
     sortedArguments,
     updateArgumentWeight
   }

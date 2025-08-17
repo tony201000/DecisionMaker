@@ -2,6 +2,8 @@
 
 import { AlertTriangle, CheckCircle, Target, XCircle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { RatioDisplay } from "@/components/ui/ratio-display"
+import { ScoreDisplay } from "@/components/ui/score-display"
 
 interface DecisionResultProps {
   positiveScore: number
@@ -76,18 +78,20 @@ export function DecisionResult({ positiveScore, negativeScore, decisionTitle }: 
 
         {/* Scores Summary */}
         <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Score Positif</p>
-            <p className="text-2xl font-bold text-green-600">{positiveScore}</p>
-          </div>
-          <div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Score Négatif</p>
-            <p className="text-2xl font-bold text-red-600">{negativeScore}</p>
-          </div>
-          <div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Ratio</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{ratio === Number.POSITIVE_INFINITY ? "∞" : ratio.toFixed(1)}:1</p>
-          </div>
+          <ScoreDisplay
+            value={positiveScore}
+            label="Score Positif"
+            variant="positive"
+          />
+          <ScoreDisplay
+            value={negativeScore}
+            label="Score Négatif"
+            variant="negative"
+          />
+          <RatioDisplay
+            ratio={ratio}
+            className="text-center"
+          />
         </div>
 
         {/* Recommendation */}

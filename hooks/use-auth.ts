@@ -6,9 +6,10 @@ import { createClient } from "@/lib/supabase/client"
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
-  const supabase = createClient()
 
   useEffect(() => {
+    const supabase = createClient()
+
     const getUser = async () => {
       const {
         data: { session }
@@ -25,7 +26,7 @@ export function useAuth() {
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [])
 
   return { user }
 }

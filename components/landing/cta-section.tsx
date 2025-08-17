@@ -33,7 +33,7 @@ export function CTASection({ user, loading }: CTASectionProps) {
                   variant="secondary"
                   className="w-full sm:w-auto"
                 >
-                  <Link href="/app">
+                  <Link href="/platform">
                     Accéder à l'application
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Link>
@@ -44,7 +44,7 @@ export function CTASection({ user, loading }: CTASectionProps) {
                   variant="outline"
                   className="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
                 >
-                  <Link href="/app">Nouvelle analyse</Link>
+                  <Link href="/platform">Nouvelle analyse</Link>
                 </Button>
               </>
             ) : (

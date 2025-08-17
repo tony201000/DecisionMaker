@@ -3,6 +3,7 @@
 import { TrendingUp } from "lucide-react"
 import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ScoreDisplay } from "@/components/ui/score-display"
 
 interface DecisionChartProps {
   positiveScore: number
@@ -144,10 +145,11 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
 
             <div className="flex items-center justify-center gap-8 mt-4">
               {/* Negative Score Circle */}
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xl">{negativeScore}</div>
-                <p className="text-sm text-red-600 mt-2 font-medium">Négatifs</p>
-              </div>
+              <ScoreDisplay
+                value={negativeScore}
+                label="Négatifs"
+                variant="negative-circle"
+              />
 
               {/* Recommendation Text - Centered between circles */}
               <div className="flex flex-col items-center px-4">
@@ -155,12 +157,11 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
               </div>
 
               {/* Positive Score Circle */}
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  {positiveScore}
-                </div>
-                <p className="text-sm text-green-600 mt-2 font-medium">Positifs</p>
-              </div>
+              <ScoreDisplay
+                value={positiveScore}
+                label="Positifs"
+                variant="positive-circle"
+              />
             </div>
           </div>
 

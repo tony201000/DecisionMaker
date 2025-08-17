@@ -31,7 +31,7 @@ export async function updateSession(request: NextRequest) {
   const publicRoutes = ["/", "/landing", "/auth", "/login"]
   const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith(route))
 
-  const protectedRoutes = ["/app"]
+  const protectedRoutes = ["/platform", "/app"]
   const isProtectedRoute = protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route))
 
   if (!user && isProtectedRoute) {

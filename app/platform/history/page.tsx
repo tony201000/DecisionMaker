@@ -1,12 +1,15 @@
 "use client"
 
-import { ArrowLeft, Calendar, FileText, Minus, Search, TrendingDown, TrendingUp } from "lucide-react"
+import { ArrowLeft, FileText, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CounterDisplay } from "@/components/ui/counter-display"
+import { DateDisplay } from "@/components/ui/date-display"
 import { Input } from "@/components/ui/input"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { RecommendationBadge } from "@/components/ui/recommendation-badge"
 import { useAuth } from "@/hooks/use-auth"
 import { useDecision } from "@/hooks/use-decision"
 import { createClient } from "@/lib/supabase/client"
@@ -34,13 +37,24 @@ export default function HistoryPage() {
 
     const fetchAllDecisions = async () => {
       try {
+        // Vérifier que l'utilisateur est toujours connecté
+        const {
+          data: { user: currentUser },
+          error: authError
+        } = await supabase.auth.getUser()
+
+        if (authError || !currentUser) {
+          router.push("/auth/login")
+          return
+        }
+
         const { data, error } = await supabase
           .from("decisions")
           .select(`
 						*,
 						arguments (*)
 					`)
-          .eq("user_id", user.id)
+          .eq("user_id", currentUser.id)
           .order("updated_at", { ascending: false })
 
         if (error) throw error
@@ -48,6 +62,10 @@ export default function HistoryPage() {
         setFilteredDecisions(data || [])
       } catch (error) {
         console.error("Erreur lors du chargement des décisions:", error)
+        // Si erreur d'authentification, rediriger vers la page de connexion
+        if (error instanceof Error && (error.message.includes("auth") || error.message.includes("JWT"))) {
+          router.push("/auth/login")
+        }
       } finally {
         setLoading(false)
       }
@@ -68,39 +86,23 @@ export default function HistoryPage() {
 
   const handleDecisionSelect = async (decisionId: string) => {
     await loadDecision(decisionId)
-    router.push("/app")
+    router.push("/platform")
   }
 
   const getDecisionStats = (decision: Decision) => {
     const argumentsArray = decision.arguments || []
     const positiveScore = argumentsArray.filter(arg => arg?.weight > 0).reduce((sum, arg) => sum + (arg?.weight || 0), 0)
     const negativeScore = Math.abs(argumentsArray.filter(arg => arg?.weight < 0).reduce((sum, arg) => sum + (arg?.weight || 0), 0))
+    const recommendation = getRecommendation(positiveScore, negativeScore)
+
+    return { negativeScore, positiveScore, recommendation }
+  }
+
+  const getRecommendation = (positiveScore: number, negativeScore: number) => {
     const ratio = negativeScore > 0 ? positiveScore / negativeScore : positiveScore > 0 ? Number.POSITIVE_INFINITY : 1
-    const recommendation = ratio >= 2 ? "Favorable" : ratio <= 0.5 ? "Défavorable" : "Mitigé"
-
-    return { negativeScore, positiveScore, ratio, recommendation }
-  }
-
-  const getRecommendationIcon = (recommendation: string) => {
-    switch (recommendation) {
-      case "Favorable":
-        return <TrendingUp className="w-4 h-4 text-green-600" />
-      case "Défavorable":
-        return <TrendingDown className="w-4 h-4 text-red-600" />
-      default:
-        return <Minus className="w-4 h-4 text-orange-600" />
-    }
-  }
-
-  const getRecommendationColor = (recommendation: string) => {
-    switch (recommendation) {
-      case "Favorable":
-        return "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20"
-      case "Défavorable":
-        return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20"
-      default:
-        return "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20"
-    }
+    if (ratio >= 2) return "Favorable"
+    if (ratio <= 0.5) return "Défavorable"
+    return "Mitigé"
   }
 
   const totalPages = Math.ceil(Math.max(0, filteredDecisions.length) / ITEMS_PER_PAGE)
@@ -111,7 +113,10 @@ export default function HistoryPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Chargement de l'historique...</div>
+        <LoadingSpinner
+          isLoading={loading}
+          message="Chargement de l'historique..."
+        />
       </div>
     )
   }
@@ -124,7 +129,7 @@ export default function HistoryPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push("/app")}
+            onClick={() => router.push("/platform")}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -167,28 +172,36 @@ export default function HistoryPage() {
                           <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                           <CardTitle className="text-lg truncate">{decision.title || "Décision sans titre"}</CardTitle>
                         </div>
-                        {getRecommendationIcon(stats.recommendation)}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <p className="text-sm text-muted-foreground line-clamp-2">{decision.description || "Aucune description"}</p>
 
                       <div className="flex items-center justify-between">
-                        <Badge className={`${getRecommendationColor(stats.recommendation)} border-0`}>{stats.recommendation}</Badge>
+                        <RecommendationBadge recommendation={stats.recommendation as "Favorable" | "Défavorable" | "Mitigé" | "Aucune donnée"} />
                         <div className="text-sm text-muted-foreground">
-                          {stats.positiveScore}:{stats.negativeScore}
+                          <CounterDisplay
+                            count={stats.positiveScore}
+                            label=""
+                            className="inline"
+                          />
+                          :
+                          <CounterDisplay
+                            count={stats.negativeScore}
+                            label=""
+                            className="inline"
+                          />
                         </div>
                       </div>
 
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {new Date(decision.updatedAt ?? "").toLocaleDateString("fr-FR")}
+                          <DateDisplay date={decision.updatedAt ?? new Date()} />
                         </div>
-                        <div>
-                          {(decision.arguments || []).length} argument
-                          {(decision.arguments || []).length > 1 ? "s" : ""}
-                        </div>
+                        <CounterDisplay
+                          count={(decision.arguments || []).length}
+                          label="argument"
+                        />
                       </div>
                     </CardContent>
                   </Card>
@@ -229,7 +242,7 @@ export default function HistoryPage() {
               <p className="text-muted-foreground mb-4">
                 {searchTerm ? "Essayez avec d'autres mots-clés" : "Commencez par créer votre première décision"}
               </p>
-              {!searchTerm && <Button onClick={() => router.push("/app")}>Créer une décision</Button>}
+              {!searchTerm && <Button onClick={() => router.push("/platform")}>Créer une décision</Button>}
             </CardContent>
           </Card>
         )}

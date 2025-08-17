@@ -23,6 +23,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     (toast: Omit<ToastData, "id">) => {
       const id = `${baseId}-${Date.now()}`
       setToasts(prev => [...prev, { ...toast, id }])
+
+      // Auto-remove toast after 4 seconds
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== id))
+      }, 4000)
     },
     [baseId]
   )

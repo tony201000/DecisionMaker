@@ -2,9 +2,12 @@
 
 import type { User } from "@supabase/supabase-js"
 import { Clock, FileText, Plus } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CounterDisplay } from "@/components/ui/counter-display"
+import { DateDisplay } from "@/components/ui/date-display"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { RecommendationBadge } from "@/components/ui/recommendation-badge"
 import type { Argument } from "@/types/decision"
 
 interface SavedDecision {
@@ -39,16 +42,6 @@ export function DecisionHistory({
   setArgs,
   clearArgs
 }: DecisionHistoryProps) {
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      month: "short",
-      year: "numeric"
-    })
-  }
-
   const getScores = (args: Array<{ weight: number }>) => {
     const positive = args.filter(arg => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0)
     const negative = Math.abs(args.filter(arg => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0))
@@ -56,13 +49,12 @@ export function DecisionHistory({
   }
 
   const getRecommendation = (positive: number, negative: number) => {
-    if (positive === 0 && negative === 0) return { color: "bg-gray-100 text-gray-800", text: "Aucune donnée" }
+    if (positive === 0 && negative === 0) return "Aucune donnée" as const
     const ratio = negative === 0 ? Number.POSITIVE_INFINITY : positive / negative
-    if (ratio >= 2) return { color: "bg-green-100 text-green-800", text: "Favorable" }
-    if (ratio <= 0.5) return { color: "bg-red-100 text-red-800", text: "Défavorable" }
-    return { color: "bg-orange-100 text-orange-800", text: "Mitigé" }
+    if (ratio >= 2) return "Favorable" as const
+    if (ratio <= 0.5) return "Défavorable" as const
+    return "Mitigé" as const
   }
-
   return (
     <Card>
       <CardHeader>
@@ -87,7 +79,14 @@ export function DecisionHistory({
                 onClick={() => onLoadDecisionHistory(user)}
                 disabled={loadingHistory}
               >
-                {loadingHistory ? "Chargement..." : "Actualiser"}
+                {loadingHistory ? (
+                  <LoadingSpinner
+                    isLoading={loadingHistory}
+                    message="Chargement..."
+                  />
+                ) : (
+                  "Actualiser"
+                )}
               </Button>
             )}
           </div>
@@ -97,7 +96,11 @@ export function DecisionHistory({
         {!user ? (
           <p className="text-muted-foreground text-center py-4">Connectez-vous pour voir votre historique</p>
         ) : loadingHistory ? (
-          <p className="text-muted-foreground text-center py-4">Chargement de l'historique...</p>
+          <LoadingSpinner
+            isLoading={loadingHistory}
+            message="Chargement de l'historique..."
+            className="py-4"
+          />
         ) : savedDecisions.length === 0 ? (
           <p className="text-muted-foreground text-center py-4">Aucune décision sauvegardée</p>
         ) : (
@@ -124,17 +127,20 @@ export function DecisionHistory({
                       <h4 className="font-medium text-sm">{decision.title}</h4>
                       {decision.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{decision.description}</p>}
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge
-                          variant="secondary"
-                          className="text-xs"
-                        >
+                        <div className="flex items-center text-xs text-muted-foreground">
                           <FileText className="w-3 h-3 mr-1" />
-                          {decision.arguments.length} arguments
-                        </Badge>
-                        <Badge className={`text-xs ${recommendation.color}`}>{recommendation.text}</Badge>
+                          <CounterDisplay
+                            count={decision.arguments.length}
+                            label="argument"
+                          />
+                        </div>
+                        <RecommendationBadge recommendation={recommendation} />
                       </div>
                     </div>
-                    <div className="text-xs text-muted-foreground ml-2">{formatDate(decision.created_at)}</div>
+                    <DateDisplay
+                      date={decision.created_at}
+                      className="ml-2"
+                    />
                   </div>
                 </button>
               )
