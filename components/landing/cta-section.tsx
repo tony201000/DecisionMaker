@@ -55,7 +55,7 @@ export function CTASection({ user, loading }: CTASectionProps) {
                   variant="secondary"
                   className="w-full sm:w-auto"
                 >
-                  <Link href="/auth/sign-up">
+                  <Link href="/sign-up">
                     Commencer maintenant
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Link>

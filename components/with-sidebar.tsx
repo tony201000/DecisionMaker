@@ -14,9 +14,7 @@ export function WithSidebar({ children, sidebarContent }: WithSidebarProps) {
     <div className="flex h-screen bg-background">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64 border-r border-border bg-card">
-          {sidebarContent}
-        </div>
+        <div className="flex flex-col w-64 border-r border-border bg-card">{sidebarContent}</div>
       </aside>
 
       {/* Mobile Sidebar & Main Content */}

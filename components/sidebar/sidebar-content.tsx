@@ -2,7 +2,8 @@
 
 import { useMemo } from "react"
 import { useAuth } from "@/hooks/use-auth"
-import { useDecision } from "@/hooks/use-decision"
+import { useCurrentDecision } from "@/hooks/use-current-decision"
+import { useDecisionHistory, useDeleteDecision, usePinDecision, useRenameDecision } from "@/hooks/use-decision-queries"
 import { createClient } from "@/lib/supabase/client"
 import { SidebarActions } from "./sidebar-actions"
 import { SidebarAuth } from "./sidebar-auth"
@@ -17,22 +18,24 @@ import { SidebarUser } from "./sidebar-user"
  */
 export function SidebarContent() {
   const { user } = useAuth()
-  const { savedDecisions, getRecentDecisions, currentDecision, loadDecision, deleteDecision, renameDecision, pinDecision, loadDecisionHistory } =
-    useDecision()
+  const { currentDecision, loadDecision } = useCurrentDecision()
+
+  // Use proper decision history hook instead of deprecated savedDecisions
+  const { data: savedDecisions = [] } = useDecisionHistory(user)
+
+  // React Query mutations for decision operations
+  const deleteDecisionMutation = useDeleteDecision()
+  const renameDecisionMutation = useRenameDecision()
+  const pinDecisionMutation = usePinDecision()
 
   // Calculation directe des décisions récentes au lieu d'un useEffect
-  const decisions = useMemo(() => getRecentDecisions(10), [getRecentDecisions])
+  const decisions = useMemo(() => {
+    const safeCount = Math.max(0, Math.min(10, savedDecisions.length))
+    return savedDecisions.slice(0, safeCount)
+  }, [savedDecisions])
 
   // Calculation directe du total des arguments au lieu d'un useEffect
-  const totalArguments = useMemo(() => (savedDecisions || []).reduce((total, d) => total + (d.arguments?.length || 0), 0), [savedDecisions])
-
-  // Chargement automatique de l'historique quand l'utilisateur change
-  // Utilisation de useMemo au lieu de useEffect pour éviter les re-renders inutiles
-  useMemo(() => {
-    if (user && savedDecisions.length === 0) {
-      loadDecisionHistory(user)
-    }
-  }, [user, savedDecisions.length, loadDecisionHistory])
+  const totalArguments = useMemo(() => savedDecisions.reduce((total, d) => total + (d.arguments?.length || 0), 0), [savedDecisions])
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -46,6 +49,24 @@ export function SidebarContent() {
 
   const handleViewAll = () => {
     window.location.href = "/platform/history"
+  }
+
+  const handleDecisionRename = (id: string, title: string) => {
+    if (user) {
+      renameDecisionMutation.mutate({ decisionId: id, newTitle: title, user })
+    }
+  }
+
+  const handleDecisionDelete = (id: string) => {
+    if (user) {
+      deleteDecisionMutation.mutate({ decisionId: id, user })
+    }
+  }
+
+  const handleDecisionPin = (id: string) => {
+    if (user) {
+      pinDecisionMutation.mutate({ decisionId: id, user })
+    }
   }
 
   return (
@@ -69,10 +90,10 @@ export function SidebarContent() {
         <SidebarRecent
           decisions={decisions}
           currentDecisionId={currentDecision?.id}
-          onDecisionSelect={id => loadDecision(id)}
-          onDecisionRename={(id, title) => user && renameDecision(user, id, title)}
-          onDecisionDelete={id => user && deleteDecision(user, id)}
-          onDecisionPin={id => user && pinDecision(user, id)}
+          onDecisionSelect={loadDecision}
+          onDecisionRename={handleDecisionRename}
+          onDecisionDelete={handleDecisionDelete}
+          onDecisionPin={handleDecisionPin}
           onViewAll={handleViewAll}
         />
       )}

@@ -6,8 +6,7 @@ import { useCallback, useRef } from "react"
  * @param delay - Le délai en millisecondes
  * @returns La fonction debouncée avec une méthode cancel
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useDebounce<T extends (...args: any[]) => void>(callback: T, delay: number) {
+export function useDebounce<T extends (...args: never[]) => void>(callback: T, delay: number) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const callbackRef = useRef(callback)
 

@@ -5,6 +5,7 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { RecommendationBadge } from "@/components/ui/recommendation-badge"
 import { RatingSlider } from "@/features/decision/components"
+import { getRecommendationFromWeight, getRecommendationLabel } from "@/lib/services/recommendation-service"
 import type { Argument } from "@/types/decision"
 
 interface EditableArgumentItemProps {
@@ -15,19 +16,16 @@ interface EditableArgumentItemProps {
 }
 
 export const EditableArgumentItem: React.FC<EditableArgumentItemProps> = ({ argument, onRemove, onUpdateWeight, onUpdateText }) => {
-  // Convert numeric weight to recommendation text
-  const getRecommendationText = (weight: number) => {
-    if (weight > 0) return "Favorable"
-    if (weight < 0) return "Défavorable"
-    return "Aucune donnée"
-  }
+  // Use unified recommendation service
+  const recommendation = getRecommendationFromWeight(argument.weight)
+  const recommendationLabel = getRecommendationLabel(recommendation)
 
   return (
     <div className={`p-4 border rounded-lg space-y-3`}>
       <div className="flex items-start justify-between gap-3">
         <p className="font-medium flex-1">{argument.text}</p>
         <div className="flex items-center gap-2">
-          <RecommendationBadge recommendation={getRecommendationText(argument.weight)} />
+          <RecommendationBadge recommendation={recommendationLabel} />
           <Button
             size="sm"
             variant="ghost"
@@ -40,7 +38,8 @@ export const EditableArgumentItem: React.FC<EditableArgumentItemProps> = ({ argu
       <RatingSlider
         value={argument.weight}
         onChange={(weight: number, text: string) => {
-          onUpdateWeight(argument.id, weight), onUpdateText(argument.id, text)
+          onUpdateWeight(argument.id, weight)
+          onUpdateText(argument.id, text)
         }}
       />
     </div>

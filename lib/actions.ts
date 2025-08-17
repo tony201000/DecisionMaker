@@ -3,7 +3,13 @@
 import { redirect } from "next/navigation"
 import { createClient } from "./supabase/server"
 
-export async function signIn(_prevState: any, formData: FormData) {
+// Type pour le state des actions de formulaire
+interface FormState {
+  error?: string
+  success?: boolean
+}
+
+export async function signIn(_prevState: FormState | null, formData: FormData) {
   if (!formData) {
     return { error: "Form data is missing" }
   }
@@ -34,7 +40,7 @@ export async function signIn(_prevState: any, formData: FormData) {
   }
 }
 
-export async function signUp(_prevState: any, formData: FormData) {
+export async function signUp(_prevState: FormState | null, formData: FormData) {
   if (!formData) {
     return { error: "Form data is missing" }
   }

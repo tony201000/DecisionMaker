@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react"
 import type React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { ErrorMessage } from "@/components/ui/error-message"
 import { Label } from "@/components/ui/label"
@@ -19,13 +19,13 @@ interface NewArgumentFormProps {
 
 export const NewArgumentForm: React.FC<NewArgumentFormProps> = ({ newArgument, setNewArgument, onAddArgument, validationErrors }) => {
   const sliderRef = useRef<HTMLDivElement>(null)
-  const ratings = Array.from({ length: 21 }, (_, i) => i - 10)
+  const ratings = useMemo(() => Array.from({ length: 21 }, (_, i) => i - 10), [])
+  const buttonWidth = 48 // w-12 = 48px
 
   // Center slider on selected value
   useEffect(() => {
     if (sliderRef.current) {
       const selectedIndex = ratings.indexOf(newArgument.weight)
-      const buttonWidth = 48 // w-12 = 48px
       const containerWidth = sliderRef.current.clientWidth
       const scrollPosition = selectedIndex * buttonWidth - containerWidth / 2 + buttonWidth / 2
       sliderRef.current.scrollTo({

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { RecommendationBadge } from "@/components/ui/recommendation-badge"
 import { Textarea } from "@/components/ui/textarea"
+import { getRecommendationFromWeight, getRecommendationLabel } from "@/lib/services/recommendation-service"
 import type { AISuggestion } from "@/types/decision"
 import { getGradient } from "@/utils/decision-styles"
 
@@ -159,9 +160,7 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
                       <p className="text-sm text-muted-foreground mt-1">{suggestion.reasoning}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <RecommendationBadge
-                        recommendation={suggestion.weight > 0 ? "Favorable" : suggestion.weight < 0 ? "Défavorable" : "Aucune donnée"}
-                      />
+                      <RecommendationBadge recommendation={getRecommendationLabel(getRecommendationFromWeight(suggestion.weight))} />
                       <Button
                         size="sm"
                         variant="ghost"

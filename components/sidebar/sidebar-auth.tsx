@@ -12,7 +12,7 @@ export const SidebarAuth = ({ onDemo }: SidebarAuthProps) => {
   return (
     <div className="space-y-2">
       <Link
-        href="/auth/login"
+        href="/login"
         className="w-full"
       >
         <Button
@@ -24,7 +24,7 @@ export const SidebarAuth = ({ onDemo }: SidebarAuthProps) => {
       </Link>
 
       <Link
-        href="/auth/sign-up"
+        href="/sign-up"
         className="w-full"
       >
         <Button

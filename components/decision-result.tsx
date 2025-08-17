@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle, Target, XCircle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { RatioDisplay } from "@/components/ui/ratio-display"
 import { ScoreDisplay } from "@/components/ui/score-display"
+import { getRecommendation } from "@/lib/services/recommendation-service"
 
 interface DecisionResultProps {
   positiveScore: number
@@ -13,10 +14,11 @@ interface DecisionResultProps {
 
 export function DecisionResult({ positiveScore, negativeScore, decisionTitle }: DecisionResultProps) {
   const ratio = negativeScore > 0 ? positiveScore / negativeScore : positiveScore > 0 ? Number.POSITIVE_INFINITY : 0
-  const shouldProceed = ratio >= 2
-  const isClose = ratio >= 1.5 && ratio < 2
 
-  const getRecommendation = () => {
+  // Use unified recommendation service for core logic
+  const basicRecommendation = getRecommendation(positiveScore, negativeScore)
+
+  const getRecommendationDetails = () => {
     if (positiveScore === 0 && negativeScore === 0) {
       return {
         action: "Analysez votre situation",
@@ -27,7 +29,7 @@ export function DecisionResult({ positiveScore, negativeScore, decisionTitle }: 
       }
     }
 
-    if (shouldProceed) {
+    if (basicRecommendation === "favorable") {
       return {
         action: "Vous devriez aller de l'avant",
         color: "green",
@@ -37,7 +39,7 @@ export function DecisionResult({ positiveScore, negativeScore, decisionTitle }: 
       }
     }
 
-    if (isClose) {
+    if (basicRecommendation === "incertain") {
       return {
         action: "Analysez davantage ou cherchez plus d'avantages",
         color: "yellow",
@@ -56,7 +58,7 @@ export function DecisionResult({ positiveScore, negativeScore, decisionTitle }: 
     }
   }
 
-  const recommendation = getRecommendation()
+  const recommendation = getRecommendationDetails()
 
   return (
     <Card>

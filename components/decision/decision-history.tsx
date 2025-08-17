@@ -8,6 +8,7 @@ import { CounterDisplay } from "@/components/ui/counter-display"
 import { DateDisplay } from "@/components/ui/date-display"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { RecommendationBadge } from "@/components/ui/recommendation-badge"
+import { getRecommendation, getRecommendationLabel } from "@/lib/services/recommendation-service"
 import type { Argument } from "@/types/decision"
 
 interface SavedDecision {
@@ -46,14 +47,6 @@ export function DecisionHistory({
     const positive = args.filter(arg => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0)
     const negative = Math.abs(args.filter(arg => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0))
     return { negative, positive }
-  }
-
-  const getRecommendation = (positive: number, negative: number) => {
-    if (positive === 0 && negative === 0) return "Aucune donnée" as const
-    const ratio = negative === 0 ? Number.POSITIVE_INFINITY : positive / negative
-    if (ratio >= 2) return "Favorable" as const
-    if (ratio <= 0.5) return "Défavorable" as const
-    return "Mitigé" as const
   }
   return (
     <Card>
@@ -108,6 +101,7 @@ export function DecisionHistory({
             {savedDecisions.map(decision => {
               const { positive, negative } = getScores(decision.arguments)
               const recommendation = getRecommendation(positive, negative)
+              const recommendationLabel = getRecommendationLabel(recommendation)
 
               return (
                 <button
@@ -134,7 +128,7 @@ export function DecisionHistory({
                             label="argument"
                           />
                         </div>
-                        <RecommendationBadge recommendation={recommendation} />
+                        <RecommendationBadge recommendation={recommendationLabel} />
                       </div>
                     </div>
                     <DateDisplay

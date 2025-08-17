@@ -1,11 +1,17 @@
 "use client"
 
+import type { User } from "@supabase/supabase-js"
 import { ArrowRight, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
-export function UnifiedHeader() {
+interface UnifiedHeaderProps {
+  user?: User | null
+  loading?: boolean
+}
+
+export function UnifiedHeader({ user, loading }: UnifiedHeaderProps) {
   const pathname = usePathname()
 
   return (
@@ -44,23 +50,42 @@ export function UnifiedHeader() {
             >
               Témoignages
             </Link>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-            >
-              <Link href="/auth/login">Se connecter</Link>
-            </Button>
-            <Button
-              asChild
-              size="sm"
-              className="bg-accent hover:bg-accent/90"
-            >
-              <Link href="/demo">
-                Voir la démo
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
+            {loading ? (
+              <div className="flex space-x-2">
+                <div className="w-20 h-8 bg-muted animate-pulse rounded"></div>
+                <div className="w-24 h-8 bg-muted animate-pulse rounded"></div>
+              </div>
+            ) : user ? (
+              <Button
+                asChild
+                size="sm"
+              >
+                <Link href="/platform">
+                  Accéder à l'application
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                >
+                  <Link href="/login">Se connecter</Link>
+                </Button>
+                <Button
+                  asChild
+                  size="sm"
+                  className="bg-accent hover:bg-accent/90"
+                >
+                  <Link href="/sign-up">
+                    Commencer
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+              </>
+            )}
           </nav>
         </div>
       </div>

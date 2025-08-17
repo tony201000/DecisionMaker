@@ -1,39 +1,30 @@
 "use client"
 
-import { useMemo } from "react"
 import { useRouter } from "next/navigation"
+import { useMemo } from "react"
+import { SidebarActions, SidebarAuth, SidebarHeader, SidebarRecent, SidebarStats, SidebarUser } from "@/components/sidebar"
 import { useAuth } from "@/hooks/use-auth"
-import { useDecision } from "@/hooks/use-decision"
+import { useCurrentDecision } from "@/hooks/use-current-decision"
+import { useDecisionHistory, useDeleteDecision, usePinDecision, useRenameDecision } from "@/hooks/use-decision-queries"
 import { createClient } from "@/lib/supabase/client"
-import {
-  SidebarActions,
-  SidebarAuth,
-  SidebarHeader,
-  SidebarRecent,
-  SidebarStats,
-  SidebarUser,
-} from "@/components/sidebar"
 
 export function SidebarContent() {
   const router = useRouter()
   const { user } = useAuth()
   const supabase = useMemo(() => createClient(), [])
-  const {
-    savedDecisions,
-    getRecentDecisions,
-    currentDecision,
-    loadDecision,
-    deleteDecision,
-    renameDecision,
-    pinDecision,
-  } = useDecision()
+
+  // Use new unified architecture
+  const { data: savedDecisions = [] } = useDecisionHistory(user)
+  const { mutate: deleteDecision } = useDeleteDecision()
+  const { mutate: renameDecision } = useRenameDecision()
+  const { mutate: pinDecision } = usePinDecision()
+
+  // Use unified current decision hook
+  const { currentDecision, loadDecision } = useCurrentDecision()
 
   const isAuthenticated = !!user
-  const decisions = getRecentDecisions(10)
-  const totalArguments = (savedDecisions || []).reduce(
-    (total, d) => total + (d.arguments?.length || 0),
-    0
-  )
+  const decisions = savedDecisions.slice(0, 10)
+  const totalArguments = (savedDecisions || []).reduce((total, d) => total + (d.arguments?.length || 0), 0)
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -49,15 +40,15 @@ export function SidebarContent() {
   }
 
   const handleDecisionRename = async (decisionId: string, newTitle: string) => {
-    await renameDecision(user, decisionId, newTitle)
+    renameDecision({ decisionId, newTitle, user })
   }
 
   const handleDecisionDelete = async (decisionId: string) => {
-    await deleteDecision(user, decisionId)
+    deleteDecision({ decisionId, user })
   }
 
   const handleDecisionPin = async (decisionId: string) => {
-    await pinDecision(user, decisionId)
+    pinDecision({ decisionId, user })
   }
 
   const handleViewAll = () => {

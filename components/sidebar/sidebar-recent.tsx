@@ -54,14 +54,10 @@ export const SidebarRecent = ({
   if (decisions.length === 0) {
     return (
       <div className="mt-6">
-        <h3 className="text-sm font-medium text-muted-foreground px-2 mb-3">
-          Décisions récentes
-        </h3>
+        <h3 className="text-sm font-medium text-muted-foreground px-2 mb-3">Décisions récentes</h3>
         <div className="px-2 py-8 text-center">
           <FileText className="mx-auto h-8 w-8 text-muted-foreground/50 mb-2" />
-          <p className="text-sm text-muted-foreground">
-            Aucune décision récente
-          </p>
+          <p className="text-sm text-muted-foreground">Aucune décision récente</p>
         </div>
       </div>
     )
@@ -70,9 +66,7 @@ export const SidebarRecent = ({
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between px-2 mb-3">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          Décisions récentes
-        </h3>
+        <h3 className="text-sm font-medium text-muted-foreground">Décisions récentes</h3>
         {decisions.length > 3 && (
           <Button
             variant="ghost"
@@ -85,17 +79,14 @@ export const SidebarRecent = ({
           </Button>
         )}
       </div>
-      
+
       <div className="space-y-1">
         {decisions.slice(0, 5).map((decision, index) => (
           <div
             key={decision.id || index}
             className={`
               group rounded-lg border transition-colors
-              ${currentDecisionId === decision.id 
-                ? "bg-primary/5 border-primary/20" 
-                : "border-transparent hover:bg-muted/50"
-              }
+              ${currentDecisionId === decision.id ? "bg-primary/5 border-primary/20" : "border-transparent hover:bg-muted/50"}
             `}
           >
             <div className="p-3">
@@ -109,8 +100,8 @@ export const SidebarRecent = ({
                     <input
                       type="text"
                       value={renameValue}
-                      onChange={(e) => setRenameValue(e.target.value)}
-                      onKeyDown={(e) => {
+                      onChange={e => setRenameValue(e.target.value)}
+                      onKeyDown={e => {
                         if (e.key === "Enter" && decision.id) handleRenameSubmit(decision.id)
                         if (e.key === "Escape") handleRenameCancel()
                       }}
@@ -118,17 +109,13 @@ export const SidebarRecent = ({
                       className="w-full text-sm font-medium bg-background border rounded px-1 py-0.5"
                     />
                   ) : (
-                    <h4 className="text-sm font-medium text-foreground truncate">
-                      {formatDecisionTitle(decision.title)}
-                    </h4>
+                    <h4 className="text-sm font-medium text-foreground truncate">{formatDecisionTitle(decision.title)}</h4>
                   )}
-                  
+
                   {decision.createdAt && (
                     <div className="flex items-center gap-1 mt-1">
                       <Clock className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(decision.createdAt).toLocaleDateString('fr-FR')}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{new Date(decision.createdAt).toLocaleDateString("fr-FR")}</span>
                     </div>
                   )}
                 </button>
@@ -144,15 +131,11 @@ export const SidebarRecent = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => decision.id && handleRename(decision.id, decision.title || "")}
-                    >
+                    <DropdownMenuItem onClick={() => decision.id && handleRename(decision.id, decision.title || "")}>
                       <Edit3 className="mr-2 h-4 w-4" />
                       Renommer
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => decision.id && onDecisionPin(decision.id)}
-                    >
+                    <DropdownMenuItem onClick={() => decision.id && onDecisionPin(decision.id)}>
                       <Pin className="mr-2 h-4 w-4" />
                       {decision.isPinned ? "Désépingler" : "Épingler"}
                     </DropdownMenuItem>
@@ -170,7 +153,7 @@ export const SidebarRecent = ({
           </div>
         ))}
       </div>
-      
+
       {decisions.length > 5 && (
         <Button
           variant="ghost"

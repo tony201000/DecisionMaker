@@ -13,7 +13,6 @@ interface DecisionHeaderProps {
   onTitleChange: (title: string) => void
   onDescriptionChange: (description: string) => void
   user: User | null
-  saving: boolean
   onCreateNew: () => void
 }
 

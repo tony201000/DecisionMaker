@@ -1,17 +1,29 @@
-"use client"
-
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { createClient } from "@/lib/supabase/client"
+import { logoutAction } from "@/lib/actions/auth-actions"
 
-export function LogoutButton() {
-  const router = useRouter()
+interface LogoutButtonProps {
+  children?: React.ReactNode
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+  size?: "default" | "sm" | "lg" | "icon"
+  className?: string
+}
 
-  const logout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/auth/login")
-  }
-
-  return <Button onClick={logout}>Se déconnecter</Button>
+export function LogoutButton({ 
+  children = "Se déconnecter", 
+  variant = "default",
+  size = "default",
+  className 
+}: LogoutButtonProps) {
+  return (
+    <form action={logoutAction}>
+      <Button 
+        type="submit" 
+        variant={variant}
+        size={size}
+        className={className}
+      >
+        {children}
+      </Button>
+    </form>
+  )
 }

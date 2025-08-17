@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr"
 import { type NextRequest, NextResponse } from "next/server"
-import type { Database } from "@/types/supabase/database"
+import type { Database } from "@/supabase/types"
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -36,13 +36,13 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = "/auth/login"
+    url.pathname = "/login"
     return NextResponse.redirect(url)
   }
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = "/auth/login"
+    url.pathname = "/login"
     return NextResponse.redirect(url)
   }
 

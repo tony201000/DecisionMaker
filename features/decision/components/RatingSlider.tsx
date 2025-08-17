@@ -42,13 +42,24 @@ export function RatingSlider({ value, onChange }: RatingSliderProps) {
 
       <div className="flex justify-between text-xs text-muted-foreground">
         {ratings.map(val => (
-          <span
+          <button
             key={val}
-            className={cn("cursor-pointer hover:text-foreground transition-colors", val === value && "text-foreground font-medium")}
+            type="button"
+            className={cn(
+              "cursor-pointer hover:text-foreground transition-colors bg-transparent border-none p-1 rounded",
+              val === value && "text-foreground font-medium"
+            )}
             onClick={() => onChange(val, "")}
+            onKeyDown={e => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault()
+                onChange(val, "")
+              }
+            }}
+            aria-label={`Définir la note à ${val > 0 ? `+${val}` : val}`}
           >
             {val > 0 ? `+${val}` : val}
-          </span>
+          </button>
         ))}
       </div>
     </div>

@@ -1,9 +1,8 @@
-"use client"
-
 import { TrendingUp } from "lucide-react"
 import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScoreDisplay } from "@/components/ui/score-display"
+import { getRecommendation, getRecommendationLabel } from "@/lib/services/recommendation-service"
 
 interface DecisionChartProps {
   positiveScore: number
@@ -26,13 +25,24 @@ export function DecisionChart({ positiveScore, negativeScore }: DecisionChartPro
     return balance * 90
   }, [positiveScore, negativeScore, totalScore])
 
-  // Determine recommendation based on 2:1 rule
+  // Determine recommendation based on 2:1 rule using unified service
   const recommendation = useMemo(() => {
-    if (totalScore === 0) return { color: "text-gray-500", text: "Aucune donnée" }
-    if (positiveScore >= negativeScore * 2) return { color: "text-green-600", text: "Favorable" }
-    if (negativeScore >= positiveScore * 2) return { color: "text-red-600", text: "Défavorable" }
-    return { color: "text-orange-600", text: "Mitigé" }
-  }, [totalScore, positiveScore, negativeScore])
+    const basicReco = getRecommendation(positiveScore, negativeScore)
+    const recoLabel = getRecommendationLabel(basicReco)
+
+    // Map to color classes for display
+    const colorMap = {
+      "Aucune donnée": "text-gray-500",
+      Défavorable: "text-red-600",
+      Favorable: "text-green-600",
+      Mitigé: "text-orange-600"
+    } as const
+
+    return {
+      color: colorMap[recoLabel as keyof typeof colorMap],
+      text: recoLabel
+    }
+  }, [positiveScore, negativeScore])
 
   // Create gradient stops for the semicircle
   const gradientId = "gaugeGradient"

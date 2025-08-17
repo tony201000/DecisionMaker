@@ -1,5 +1,3 @@
-"use client"
-
 import { BarChart3, Clock, Target } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -25,9 +23,7 @@ export const SidebarStats = ({ totalDecisions, totalArguments, thisWeekDecisions
                 <Target className="w-3 h-3 text-neutral-500" />
                 <span className="text-sm text-neutral-600 dark:text-neutral-400">Décisions prises</span>
               </div>
-              <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                {totalDecisions}
-              </span>
+              <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{totalDecisions}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -35,9 +31,7 @@ export const SidebarStats = ({ totalDecisions, totalArguments, thisWeekDecisions
                 <BarChart3 className="w-3 h-3 text-neutral-500" />
                 <span className="text-sm text-neutral-600 dark:text-neutral-400">Arguments créés</span>
               </div>
-              <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                {totalArguments}
-              </span>
+              <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{totalArguments}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -45,9 +39,7 @@ export const SidebarStats = ({ totalDecisions, totalArguments, thisWeekDecisions
                 <Clock className="w-3 h-3 text-neutral-500" />
                 <span className="text-sm text-neutral-600 dark:text-neutral-400">Cette semaine</span>
               </div>
-              <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                {thisWeekDecisions}
-              </span>
+              <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{thisWeekDecisions}</span>
             </div>
           </div>
         </CardContent>

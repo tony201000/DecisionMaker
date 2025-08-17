@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     // Construire le contexte pour l'IA
     const existingArgsText =
       existingArguments?.length > 0
-        ? `\n\nArguments déjà identifiés :\n${existingArguments.map((arg: any) => `- ${arg.text} (note: ${arg.weight})`).join("\n")}`
+        ? `\n\nArguments déjà identifiés :\n${existingArguments.map((arg: { text: string; weight: number }) => `- ${arg.text} (note: ${arg.weight})`).join("\n")}`
         : ""
 
     const prompt = `Tu es un assistant expert en prise de décision qui aide les utilisateurs à explorer tous les aspects d'une décision importante. 
