@@ -1,10 +1,10 @@
 "use client"
 
-import { CTASection } from "@/components/landing/cta-section"
-import { FeaturesSection } from "@/components/landing/features-section"
-import { HeroSection } from "@/components/landing/hero-section"
-import { MethodSection } from "@/components/landing/method-section"
 import { UnifiedHeader } from "@/components/shared/unified-header"
+import { CTASection } from "@/features/landing/components/cta-section"
+import { FeaturesSection } from "@/features/landing/components/features-section"
+import { HeroSection } from "@/features/landing/components/hero-section"
+import { MethodSection } from "@/features/landing/components/method-section"
 import { useAuth } from "@/hooks/use-auth"
 
 export default function LandingPage() {

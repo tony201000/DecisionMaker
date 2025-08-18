@@ -4,20 +4,18 @@ import { Plus } from "lucide-react"
 import type React from "react"
 import { useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { ErrorMessage } from "@/components/ui/error-message"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { DECISION_CONSTANTS } from "@/lib/constants"
-import { getGradient } from "@/utils/decision-styles"
+import { getGradient } from "@/lib/utils/decision-styles"
 
 interface NewArgumentFormProps {
   newArgument: { text: string; weight: number }
   setNewArgument: (arg: { text: string; weight: number }) => void
   onAddArgument: () => void
-  validationErrors: string[]
 }
 
-export const NewArgumentForm: React.FC<NewArgumentFormProps> = ({ newArgument, setNewArgument, onAddArgument, validationErrors }) => {
+export const NewArgumentForm: React.FC<NewArgumentFormProps> = ({ newArgument, setNewArgument, onAddArgument }) => {
   const sliderRef = useRef<HTMLDivElement>(null)
   const ratings = useMemo(() => Array.from({ length: 21 }, (_, i) => i - 10), [])
   const buttonWidth = 48 // w-12 = 48px
@@ -51,7 +49,6 @@ export const NewArgumentForm: React.FC<NewArgumentFormProps> = ({ newArgument, s
           rows={2}
           maxLength={DECISION_CONSTANTS.MAX_ARGUMENT_LENGTH}
           aria-describedby="argument-help"
-          aria-invalid={validationErrors.length > 0}
         />
         <div
           id="argument-help"
@@ -59,7 +56,6 @@ export const NewArgumentForm: React.FC<NewArgumentFormProps> = ({ newArgument, s
         >
           Décrivez un point positif ou négatif concernant votre décision
         </div>
-        {validationErrors.length > 0 && <ErrorMessage message={validationErrors[0]} />}
       </div>
 
       <div className="space-y-2">

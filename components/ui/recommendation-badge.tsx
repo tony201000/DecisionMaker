@@ -1,6 +1,6 @@
 import type React from "react"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/decision-styles"
 
 interface RecommendationBadgeProps {
   recommendation: "Favorable" | "Défavorable" | "Mitigé" | "Aucune donnée"

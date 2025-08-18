@@ -1,5 +1,5 @@
-import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
 import { UnifiedHeader } from "@/components/shared/unified-header"
+import { ForgotPasswordForm } from "@/features/auth/forgot-password-form"
 
 export default function Page() {
   return (

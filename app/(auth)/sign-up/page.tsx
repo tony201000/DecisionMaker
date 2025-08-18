@@ -1,5 +1,5 @@
-import { SignUpForm } from "@/components/auth/sign-up-form"
 import { UnifiedHeader } from "@/components/shared/unified-header"
+import { SignUpForm } from "@/features/auth/sign-up-form"
 
 export default function Page() {
   return (

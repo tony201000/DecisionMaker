@@ -2,14 +2,16 @@
 
 import { Moon, Plus, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTheme } from "@/hooks/use-ui"
 
 interface SidebarActionsProps {
-  isDarkMode: boolean
-  onToggleDarkMode: () => void
   onNewDecision: () => void
 }
 
-export const SidebarActions = ({ isDarkMode, onToggleDarkMode, onNewDecision }: SidebarActionsProps) => {
+export const SidebarActions = ({ onNewDecision }: SidebarActionsProps) => {
+  // ✅ ZUSTAND: État theme centralisé
+  const { isDarkMode, toggleDarkMode } = useTheme()
+
   return (
     <div className="mt-6 space-y-3">
       <Button
@@ -25,7 +27,7 @@ export const SidebarActions = ({ isDarkMode, onToggleDarkMode, onNewDecision }: 
         <Button
           variant="ghost"
           size="sm"
-          onClick={onToggleDarkMode}
+          onClick={toggleDarkMode}
           className="w-auto h-auto p-1"
         >
           {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}

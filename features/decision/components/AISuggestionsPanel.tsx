@@ -9,25 +9,22 @@ import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { RecommendationBadge } from "@/components/ui/recommendation-badge"
 import { Textarea } from "@/components/ui/textarea"
+import { useAISuggestions } from "@/hooks/use-ai-suggestions"
 import { getRecommendationFromWeight, getRecommendationLabel } from "@/lib/services/recommendation-service"
+import { getGradient } from "@/lib/utils/decision-styles"
 import type { AISuggestion } from "@/types/decision"
-import { getGradient } from "@/utils/decision-styles"
 
 interface AISuggestionsPanelProps {
   decisionTitle: string
-  aiSuggestions: AISuggestion[]
-  loadingSuggestions: boolean
   onGenerateSuggestions: () => void
-  onAddSuggestion: (suggestion: AISuggestion) => void
 }
 
-export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
-  decisionTitle,
-  aiSuggestions,
-  loadingSuggestions,
-  onGenerateSuggestions,
-  onAddSuggestion
-}) => {
+export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ decisionTitle, onGenerateSuggestions }) => {
+  // ✅ ZUSTAND: État des suggestions depuis le store
+  const { aiSuggestions, loadingSuggestions, addSuggestion } = useAISuggestions()
+
+  // ✅ LOCAL: État d'édition temporaire (spécifique au composant)
+  // ✅ LOCAL: État d'édition temporaire (spécifique au composant)
   const [editingSuggestions, setEditingSuggestions] = useState<{
     [key: number]: { text: string; weight: number }
   }>({})
@@ -51,7 +48,7 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
   const saveSuggestionEdit = (index: number, originalSuggestion: AISuggestion) => {
     const edited = editingSuggestions[index]
     if (edited?.text.trim()) {
-      onAddSuggestion({
+      addSuggestion({
         ...originalSuggestion,
         text: edited.text,
         weight: edited.weight
@@ -170,7 +167,7 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => onAddSuggestion(suggestion)}
+                        onClick={() => addSuggestion(suggestion)}
                       >
                         <Plus className="w-3 h-3" />
                       </Button>

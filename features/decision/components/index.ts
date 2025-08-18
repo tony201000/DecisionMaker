@@ -1,6 +1,8 @@
 export { AISuggestionsPanel } from "./AISuggestionsPanel"
 export { ArgumentList } from "./ArgumentList"
 export { ArgumentsSection } from "./ArgumentsSection"
+export { DecisionChart } from "./DecisionChart"
+export { DecisionResult } from "./DecisionResult"
 export { EditableArgumentItem } from "./EditableArgumentItem"
 export { NewArgumentForm } from "./NewArgumentForm"
 export { RatingSlider } from "./RatingSlider"

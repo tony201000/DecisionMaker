@@ -18,7 +18,8 @@ import { SidebarUser } from "./sidebar-user"
  */
 export function SidebarContent() {
   const { user } = useAuth()
-  const { currentDecision, loadDecision } = useCurrentDecision()
+  // ✅ API ZUSTAND PURE
+  const { currentDecisionId, loadDecision } = useCurrentDecision()
 
   // Use proper decision history hook instead of deprecated savedDecisions
   const { data: savedDecisions = [] } = useDecisionHistory(user)
@@ -75,21 +76,13 @@ export function SidebarContent() {
       <SidebarHeader />
 
       {/* Actions ou Authentification */}
-      {user ? (
-        <SidebarActions
-          isDarkMode={false} // TODO: Récupérer depuis le contexte theme
-          onToggleDarkMode={() => {}} // TODO: Implémenter
-          onNewDecision={handleNewDecision}
-        />
-      ) : (
-        <SidebarAuth />
-      )}
+      {user ? <SidebarActions onNewDecision={handleNewDecision} /> : <SidebarAuth />}
 
       {/* Décisions récentes (si authentifié) */}
       {user && decisions.length > 0 && (
         <SidebarRecent
           decisions={decisions}
-          currentDecisionId={currentDecision?.id}
+          currentDecisionId={currentDecisionId || undefined}
           onDecisionSelect={loadDecision}
           onDecisionRename={handleDecisionRename}
           onDecisionDelete={handleDecisionDelete}

@@ -2,9 +2,10 @@ import type { Metadata } from "next"
 import { Inter, Space_Grotesk } from "next/font/google"
 import React from "react"
 import "./globals.css"
-import ErrorBoundary from "@/components/error-boundary"
+import ErrorBoundary from "@/components/layout/error-boundary"
 import { ToastProvider } from "@/hooks/use-toast"
-import { AppQueryProvider } from "@/providers/app-query-provider"
+import { AppQueryProvider } from "@/lib/providers/app-query-provider"
+import ThemeProvider from "@/lib/providers/theme-provider"
 
 const inter = Inter({
   display: "swap",
@@ -34,12 +35,15 @@ export default function RootLayout({
     <html
       lang="fr"
       className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
+      suppressHydrationWarning
     >
       <body className="transition-colors duration-300">
         <React.StrictMode>
           <ErrorBoundary>
             <AppQueryProvider>
-              <ToastProvider>{children}</ToastProvider>
+              <ToastProvider>
+                <ThemeProvider>{children}</ThemeProvider>
+              </ToastProvider>
             </AppQueryProvider>
           </ErrorBoundary>
         </React.StrictMode>

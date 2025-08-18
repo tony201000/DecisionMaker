@@ -1,5 +1,5 @@
-import { LoginForm } from "@/components/auth/login-form"
 import { UnifiedHeader } from "@/components/shared/unified-header"
+import { LoginForm } from "@/features/auth/login-form"
 
 export default function Page() {
   return (

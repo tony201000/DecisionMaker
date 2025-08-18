@@ -1,5 +1,5 @@
 import type React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/decision-styles"
 
 interface DateDisplayProps {
   date: string | Date

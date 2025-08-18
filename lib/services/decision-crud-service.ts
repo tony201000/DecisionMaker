@@ -1,6 +1,8 @@
 import type { User } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
 import type { AISuggestion, Argument, Decision } from "@/types/decision"
+import { NewDecisionSchema, ArgumentSchema } from "@/features/decision/schemas"
+import * as z from "zod"
 
 // Type pour la réponse de Supabase
 interface SupabaseDecision {
@@ -104,17 +106,21 @@ export class DecisionCrudService {
       throw new Error("User is required to save a decision")
     }
 
-    if (!decision.title.trim()) {
-      throw new Error("Title is required")
-    }
-
+    // ✅ VALIDATION ZOD - Remplace la validation manuelle
     try {
-      // Save decision
+      const validatedDecision = NewDecisionSchema.parse({
+        title: decision.title,
+        description: decision.description
+      })
+      
+      const validatedArgs = z.array(ArgumentSchema.omit({ id: true, createdAt: true, updatedAt: true })).parse(args)
+      
+      // Save decision avec les données validées
       const { data: decisionData, error: decisionError } = await this.supabase
         .from("decisions")
         .insert({
-          description: decision.description,
-          title: decision.title,
+          description: validatedDecision.description,
+          title: validatedDecision.title,
           user_id: user.id
         })
         .select()
@@ -122,9 +128,9 @@ export class DecisionCrudService {
 
       if (decisionError) throw decisionError
 
-      // Save arguments
-      if (args.length > 0) {
-        const argumentsToInsert = args.map(arg => ({
+      // Save arguments avec validation Zod
+      if (validatedArgs.length > 0) {
+        const argumentsToInsert = validatedArgs.map(arg => ({
           decision_id: decisionData.id,
           text: arg.text,
           weight: arg.weight
@@ -135,11 +141,16 @@ export class DecisionCrudService {
       }
 
       return {
-        arguments: args,
+        arguments: validatedArgs.map((arg, index) => ({
+          ...arg,
+          id: `temp-${decisionData.id}-${index}`, // ID temporaire pour les nouveaux arguments
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })),
         createdAt: new Date(),
-        description: decision.description,
+        description: validatedDecision.description,
         id: decisionData.id,
-        title: decision.title,
+        title: validatedDecision.title,
         updatedAt: new Date()
       }
     } catch (error) {
@@ -225,15 +236,19 @@ export class DecisionCrudService {
   }
 
   async renameDecision(user: User | null, decisionId: string, newTitle: string): Promise<void> {
-    if (!user || !newTitle.trim()) {
-      throw new Error("User and new title are required to rename a decision")
+    if (!user) {
+      throw new Error("User is required to rename a decision")
     }
+
+    // ✅ VALIDATION ZOD - Remplace la validation manuelle trim()
+    const titleSchema = z.string().min(1, "Le titre est requis").max(100, "Le titre ne peut pas dépasser 100 caractères")
+    const validatedTitle = titleSchema.parse(newTitle.trim())
 
     try {
       const { error } = await this.supabase
         .from("decisions")
         .update({
-          title: newTitle.trim(),
+          title: validatedTitle,
           updated_at: new Date().toISOString()
         })
         .eq("id", decisionId)

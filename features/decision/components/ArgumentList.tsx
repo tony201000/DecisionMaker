@@ -4,8 +4,8 @@ import type React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CounterDisplay } from "@/components/ui/counter-display"
 import { EditableArgumentItem } from "@/features/decision/components"
+import { getArgumentColor } from "@/lib/utils/decision-styles"
 import type { Argument } from "@/types/decision"
-import { getArgumentColor } from "@/utils/decision-styles"
 
 interface ArgumentListProps {
   arguments: Argument[]

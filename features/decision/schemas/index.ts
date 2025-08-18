@@ -1,4 +1,4 @@
-import { z } from "zod"
+import * as z from "zod"
 
 // Schéma pour un argument
 export const ArgumentSchema = z.object({

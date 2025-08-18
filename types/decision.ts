@@ -14,6 +14,7 @@ export interface Decision {
 }
 
 export interface AISuggestion {
+  id: string
   text: string
   weight: number
   category: string

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { DecisionPlatform } from "@/components/platform/DecisionPlatform"
+import { DecisionPlatform } from "@/features/platform/DecisionPlatform"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function PlatformPage() {
