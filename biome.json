@@ -1,0 +1,74 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.1.4/schema.json",
+	"assist": {
+		"actions": {
+			"recommended": true,
+			"source": {
+				"organizeImports": "on",
+				"useSortedKeys": "on"
+			}
+		}
+	},
+	"css": {
+		"linter": {
+			"enabled": true
+		}
+	},
+	"files": {
+		"includes": [
+			"app/**",
+			"lib/**",
+			"components/**",
+			"hooks/**",
+			"styles/**",
+			"types/**",
+			"utils/**",
+			"features/**",
+			"middleware.ts"
+		]
+	},
+	"javascript": {
+		"assist": {
+			"enabled": true
+		},
+		"formatter": {
+			"arrowParentheses": "asNeeded",
+			"attributePosition": "multiline",
+			"bracketSameLine": false,
+			"bracketSpacing": true,
+			"enabled": true,
+			"expand": "auto",
+			"indentStyle": "space",
+			"indentWidth": 2,
+			"jsxQuoteStyle": "double",
+			"lineWidth": 150,
+			"quoteProperties": "asNeeded",
+			"quoteStyle": "double",
+			"semicolons": "asNeeded",
+			"trailingCommas": "none"
+		},
+		"linter": {
+			"enabled": true
+		}
+	},
+	"json": {
+		"assist": {
+			"enabled": true
+		}
+	},
+	"linter": {
+		"domains": {
+			"next": "all",
+			"react": "all"
+		},
+		"rules": {
+			"recommended": true
+		}
+	},
+	"vcs": {
+		"clientKind": "git",
+		"defaultBranch": "main",
+		"enabled": true,
+		"useIgnoreFile": true
+	}
+}

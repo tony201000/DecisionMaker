@@ -1,0 +1,6 @@
+export { CompaniesSection } from "./CompaniesSection"
+export { CtaSection } from "./CtaSection"
+export { HeroSection } from "./HeroSection"
+export { ShareExperienceSection } from "./ShareExperienceSection"
+export { StatsSection } from "./StatsSection"
+export { TestimonialsGrid } from "./TestimonialsGrid"

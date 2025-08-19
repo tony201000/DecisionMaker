@@ -1,14 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  images: {
-    unoptimized: true,
-  },
-}
+	eslint: {
+		ignoreDuringBuilds: false,
+	},
+	typescript: {
+		ignoreBuildErrors: false,
+	},
+	images: {
+		unoptimized: true,
+	},
+	experimental: {
+    	optimizePackageImports: ['radix-ui'],
+  	},
 
-export default nextConfig
+};
+
+export default nextConfig;
