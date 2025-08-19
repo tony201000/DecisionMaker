@@ -35,7 +35,7 @@ Gère les décisions et arguments en cours d'édition.
 **État :**
 - `currentDecisionId` - ID de la décision active
 - `title` - Titre de la décision
-- `arguments` - Liste des arguments avec text/weight
+- `arguments` - Liste des arguments avec text/note
 - `newArgument` - Formulaire d'ajout d'argument
 
 **Calculs :** Scores positifs/négatifs, tri des arguments

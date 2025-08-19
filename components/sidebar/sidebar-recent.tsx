@@ -109,7 +109,7 @@ export const SidebarRecent = ({
                       className="w-full text-sm font-medium bg-background border rounded px-1 py-0.5"
                     />
                   ) : (
-                    <h4 className="text-sm font-medium text-foreground truncate">{formatDecisionTitle(decision.title)}</h4>
+                    <h4 className="text-sm font-medium text-foreground truncate min-w-0">{formatDecisionTitle(decision.title)}</h4>
                   )}
 
                   {decision.createdAt && (

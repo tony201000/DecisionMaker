@@ -3,7 +3,7 @@
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 import type * as React from "react"
-
+import { VisuallyHidden } from "@/components/ui/visually-hidden"
 import { cn } from "@/lib/utils/decision-styles"
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
@@ -80,6 +80,12 @@ function SheetContent({
         )}
         {...props}
       >
+        <VisuallyHidden asChild>
+          <SheetPrimitive.Title>Sheet</SheetPrimitive.Title>
+        </VisuallyHidden>
+        <VisuallyHidden asChild>
+          <SheetPrimitive.Description>Sheet content</SheetPrimitive.Description>
+        </VisuallyHidden>
         {children}
         <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
           <XIcon className="size-4" />

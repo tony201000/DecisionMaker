@@ -1,5 +1,6 @@
 "use client"
 
+import { useQueryClient } from "@tanstack/react-query"
 import { ArrowLeft, FileText, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
@@ -10,6 +11,8 @@ import { DateDisplay } from "@/components/ui/date-display"
 import { Input } from "@/components/ui/input"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { RecommendationBadge } from "@/components/ui/recommendation-badge"
+import { DecisionActionsMenu } from "@/features/decision/components/decision-actions-menu"
+import { type FilterOption, HistorySubmenu, type SortOption } from "@/features/decision/components/history-submenu"
 import { useAuth } from "@/hooks/use-auth"
 import { useCurrentDecision } from "@/hooks/use-current-decision"
 import { useDecisionHistory } from "@/hooks/use-decision-queries"
@@ -20,28 +23,78 @@ const ITEMS_PER_PAGE = 12
 
 export default function HistoryPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { user, loading: authLoading } = useAuth()
   // ✅ API ZUSTAND PURE - loadDecision existe déjà
   const { loadDecision } = useCurrentDecision()
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const [currentSort, setCurrentSort] = useState<SortOption>("recent")
+  const [currentFilter, setCurrentFilter] = useState<FilterOption>("all")
 
   const { data: decisions = [], isLoading, error } = useDecisionHistory(user)
   const { getDecisionStats } = useDecisionStats()
 
+  // Fonction pour calculer la recommandation d'une décision
+  const getDecisionRecommendation = useMemo(() => {
+    return (decision: Decision) => {
+      const stats = getDecisionStats(decision)
+      return stats.recommendation as "Favorable" | "Défavorable" | "Mitigé" | "Aucune donnée"
+    }
+  }, [getDecisionStats])
+
+  // Filtrer les décisions
   const filteredDecisions = useMemo(() => {
-    return (decisions || []).filter(
+    let filtered = (decisions || []).filter(
       (decision: Decision) =>
         (decision.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (decision.description || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
-  }, [decisions, searchTerm])
+
+    // Appliquer le filtre
+    if (currentFilter !== "all") {
+      filtered = filtered.filter(decision => {
+        switch (currentFilter) {
+          case "favorable":
+            return getDecisionRecommendation(decision) === "Favorable"
+          case "defavorable":
+            return getDecisionRecommendation(decision) === "Défavorable"
+          case "mitige":
+            return getDecisionRecommendation(decision) === "Mitigé"
+          case "pinned":
+            return decision.isPinned === true
+          default:
+            return true
+        }
+      })
+    }
+
+    // Appliquer le tri
+    filtered.sort((a, b) => {
+      switch (currentSort) {
+        case "oldest":
+          return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+        case "title":
+          return (a.title || "").localeCompare(b.title || "")
+        case "score": {
+          const statsA = getDecisionStats(a)
+          const statsB = getDecisionStats(b)
+          const scoreA = statsA.positiveScore - statsA.negativeScore
+          const scoreB = statsB.positiveScore - statsB.negativeScore
+          return scoreB - scoreA
+        }
+        default:
+          return new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime()
+      }
+    })
+
+    return filtered
+  }, [decisions, searchTerm, currentSort, currentFilter, getDecisionStats, getDecisionRecommendation])
 
   // Réinitialiser la page courante lorsque le terme de recherche change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: we need to include searchTerm here
   useEffect(() => {
     setCurrentPage(1)
-    console.log(searchTerm);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm])
 
   // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
@@ -121,6 +174,17 @@ export default function HistoryPage() {
           />
         </div>
 
+        {/* Submenu de filtres et tri */}
+        <HistorySubmenu
+          decisions={decisions}
+          currentSort={currentSort}
+          currentFilter={currentFilter}
+          onSortChange={setCurrentSort}
+          onFilterChange={setCurrentFilter}
+          totalCount={decisions.length}
+          filteredCount={filteredDecisions.length}
+        />
+
         {/* Decisions Grid */}
         {paginatedDecisions.length > 0 ? (
           <>
@@ -130,14 +194,24 @@ export default function HistoryPage() {
                 return (
                   <Card
                     key={decision.id}
-                    className="cursor-pointer hover:shadow-lg transition-shadow border-border hover:border-primary/20"
+                    className="group cursor-pointer hover:shadow-lg transition-shadow border-border hover:border-primary/20"
                     onClick={() => decision.id && handleDecisionSelect(decision.id)}
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                           <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                          <CardTitle className="text-lg truncate">{decision.title || "Décision sans titre"}</CardTitle>
+                          <CardTitle className="text-lg truncate min-w-0">{decision.title || "Décision sans titre"}</CardTitle>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <DecisionActionsMenu
+                            decision={decision}
+                            onDecisionUpdated={() => {
+                              // Invalider les requêtes pour recharger les données
+                              queryClient.invalidateQueries({ queryKey: ["decisionHistory", user?.id] })
+                            }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          />
                         </div>
                       </div>
                     </CardHeader>

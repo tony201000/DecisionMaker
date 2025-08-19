@@ -18,7 +18,7 @@ interface SavedDecision {
   created_at: string
   arguments: Array<{
     text: string
-    weight: number
+    note: number
   }>
 }
 
@@ -43,9 +43,9 @@ export function DecisionHistory({
   setArgs,
   clearArgs
 }: DecisionHistoryProps) {
-  const getScores = (args: Array<{ weight: number }>) => {
-    const positive = args.filter(arg => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0)
-    const negative = Math.abs(args.filter(arg => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0))
+  const getScores = (args: Array<{ note: number }>) => {
+    const positive = args.filter(arg => arg.note > 0).reduce((sum, arg) => sum + arg.note, 0)
+    const negative = Math.abs(args.filter(arg => arg.note < 0).reduce((sum, arg) => sum + arg.note, 0))
     return { negative, positive }
   }
   return (
@@ -116,9 +116,9 @@ export function DecisionHistory({
                   }}
                   tabIndex={0}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm">{decision.title}</h4>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm truncate">{decision.title}</h4>
                       {decision.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{decision.description}</p>}
                       <div className="flex items-center gap-2 mt-2">
                         <div className="flex items-center text-xs text-muted-foreground">
@@ -131,10 +131,12 @@ export function DecisionHistory({
                         <RecommendationBadge recommendation={recommendationLabel} />
                       </div>
                     </div>
-                    <DateDisplay
-                      date={decision.created_at}
-                      className="ml-2"
-                    />
+                    <div className="flex-shrink-0 ml-2">
+                      <DateDisplay
+                        date={decision.created_at}
+                        className="text-xs"
+                      />
+                    </div>
                   </div>
                 </button>
               )

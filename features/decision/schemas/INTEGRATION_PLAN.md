@@ -64,7 +64,7 @@ async saveDecision(user, decision, args) {
 addArgument: () => {
   // ❌ SUPPRIMER : if (form.text.trim()) { ... }
   // ✅ AJOUTER : 
-  const result = ArgumentSchema.safeParse({ text: form.text, weight: form.weight })
+  const result = ArgumentSchema.safeParse({ text: form.text, note: form.note })
   if (result.success) { addDraftArgument(result.data) }
   else { setValidationErrors(result.error.issues) }
 }

@@ -4,14 +4,15 @@ import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AISuggestionsPanel, ArgumentList, NewArgumentForm } from "@/features/decision/components"
 import type { Argument } from "@/types/decision"
+import type { NewArgument } from "../schemas"
 
 interface ArgumentsSectionProps {
-  newArgument: { text: string; weight: number }
-  setNewArgument: (arg: { text: string; weight: number }) => void
+  newArgument: NewArgument
+  setNewArgument: (arg: NewArgument) => void
   onAddArgument: () => void
   sortedArguments: Argument[]
   onRemoveArgument: (id: string) => void
-  onUpdateArgumentWeight: (id: string, weight: number) => void
+  onUpdateArgumentNote: (id: string, note: number) => void
   decisionTitle: string
   onGenerateSuggestions: () => void
 }
@@ -22,18 +23,18 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
   onAddArgument,
   sortedArguments,
   onRemoveArgument,
-  onUpdateArgumentWeight,
+  onUpdateArgumentNote,
   decisionTitle,
   onGenerateSuggestions
 }: ArgumentsSectionProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Add New Argument */}
       <Card>
         <CardHeader>
-          <CardTitle>📝 Ajouter un Argument</CardTitle>
+          <CardTitle className="text-lg md:text-xl">📝 Ajouter un Argument</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 md:p-6">
           <NewArgumentForm
             newArgument={newArgument}
             setNewArgument={setNewArgument}
@@ -57,11 +58,8 @@ export const ArgumentsSection = React.memo(function ArgumentsSection({
       <ArgumentList
         arguments={sortedArguments}
         onRemoveArgument={onRemoveArgument}
-        onUpdateArgumentWeight={onUpdateArgumentWeight}
-        onUpdateArgumentText={(_id, _text) => {
-          //TODO: // If you want to update the text, you should have a separate handler for updating text.
-          // Here, just leave this empty or implement a proper handler if needed.
-        }}
+        onUpdateArgumentNote={onUpdateArgumentNote}
+        onUpdateArgumentText={(_id, _text) => {}}
       />
     </div>
   )

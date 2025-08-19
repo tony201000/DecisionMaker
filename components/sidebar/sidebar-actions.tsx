@@ -1,16 +1,17 @@
 "use client"
 
 import { Moon, Plus, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
-import { useTheme } from "@/hooks/use-ui"
 
 interface SidebarActionsProps {
   onNewDecision: () => void
 }
 
 export const SidebarActions = ({ onNewDecision }: SidebarActionsProps) => {
-  // ✅ ZUSTAND: État theme centralisé
-  const { isDarkMode, toggleDarkMode } = useTheme()
+  // ✅ Utilise next-themes au lieu de Zustand pour le thème
+  const { theme, setTheme } = useTheme()
+  const isDark = theme === "dark"
 
   return (
     <div className="mt-6 space-y-3">
@@ -27,10 +28,10 @@ export const SidebarActions = ({ onNewDecision }: SidebarActionsProps) => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={toggleDarkMode}
+          onClick={() => setTheme(isDark ? "light" : "dark")}
           className="w-auto h-auto p-1"
         >
-          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </Button>
       </div>
     </div>

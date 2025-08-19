@@ -23,8 +23,8 @@ interface SuggestionsState {
   filters: {
     showPositiveOnly: boolean
     showNegativeOnly: boolean
-    minWeight: number
-    maxWeight: number
+    minNote: number
+    maxNote: number
   }
 
   // Generation parameters (for regeneration)
@@ -73,8 +73,8 @@ interface SuggestionsActions {
 type SuggestionsStore = SuggestionsState & SuggestionsActions
 
 const initialFilters: SuggestionsState["filters"] = {
-  maxWeight: 10,
-  minWeight: -10,
+  maxNote: 10,
+  minNote: -10,
   showNegativeOnly: false,
   showPositiveOnly: false
 }
@@ -122,17 +122,17 @@ export const useSuggestionsStore = create<SuggestionsStore>()(
       getFilteredSuggestions: () => {
         const { suggestions, filters } = get()
         return suggestions.filter(suggestion => {
-          if (filters.showPositiveOnly && suggestion.weight <= 0) return false
-          if (filters.showNegativeOnly && suggestion.weight >= 0) return false
-          if (suggestion.weight < filters.minWeight) return false
-          if (suggestion.weight > filters.maxWeight) return false
+          if (filters.showPositiveOnly && suggestion.note <= 0) return false
+          if (filters.showNegativeOnly && suggestion.note >= 0) return false
+          if (suggestion.note < filters.minNote) return false
+          if (suggestion.note > filters.maxNote) return false
           return true
         })
       },
 
       getNegativeSuggestions: () => {
         const { suggestions } = get()
-        return suggestions.filter(s => s.weight < 0)
+        return suggestions.filter(s => s.note < 0)
       },
 
       getPinnedSuggestions: () => {
@@ -142,7 +142,7 @@ export const useSuggestionsStore = create<SuggestionsStore>()(
 
       getPositiveSuggestions: () => {
         const { suggestions } = get()
-        return suggestions.filter(s => s.weight > 0)
+        return suggestions.filter(s => s.note > 0)
       },
       isGenerating: false,
       lastGenerationParams: null,

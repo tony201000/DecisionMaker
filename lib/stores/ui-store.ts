@@ -7,9 +7,6 @@ interface UIState {
   currentPage: string
   breadcrumbs: Array<{ label: string; href: string }>
 
-  // Theme & Appearance
-  isDarkMode: boolean
-
   // Modal & Dialog states
   modals: {
     deleteConfirm: boolean
@@ -31,10 +28,6 @@ interface UIActions {
   toggleSidebar: () => void
   setCurrentPage: (page: string) => void
   setBreadcrumbs: (breadcrumbs: UIState["breadcrumbs"]) => void
-
-  // Theme actions
-  setDarkMode: (dark: boolean) => void
-  toggleDarkMode: () => void
 
   // Modal actions
   openModal: (modal: keyof UIState["modals"]) => void
@@ -75,7 +68,6 @@ export const useUIStore = create<UIStore>()(
             "closeModal"
           ),
         currentPage: "decision",
-        isDarkMode: false,
         modals: {
           deleteConfirm: false,
           renameDialog: false,
@@ -96,9 +88,6 @@ export const useUIStore = create<UIStore>()(
 
         setCurrentPage: page => set({ currentPage: page }, false, "setCurrentPage"),
 
-        // Theme actions
-        setDarkMode: dark => set({ isDarkMode: dark }, false, "setDarkMode"),
-
         // Navigation actions
         setSidebarOpen: open => set({ sidebarOpen: open }, false, "setSidebarOpen"),
 
@@ -114,8 +103,6 @@ export const useUIStore = create<UIStore>()(
         // Initial state
         sidebarOpen: false,
 
-        toggleDarkMode: () => set(state => ({ isDarkMode: !state.isDarkMode }), false, "toggleDarkMode"),
-
         toggleSidebar: () => set(state => ({ sidebarOpen: !state.sidebarOpen }), false, "toggleSidebar"),
         ui: {
           deletingDecision: false,
@@ -127,7 +114,6 @@ export const useUIStore = create<UIStore>()(
         name: "decision-maker-ui",
         // Only persist UI preferences, not temporary states
         partialize: state => ({
-          isDarkMode: state.isDarkMode,
           sidebarOpen: state.sidebarOpen
         }),
         storage: createJSONStorage(() => localStorage)
@@ -140,7 +126,6 @@ export const useUIStore = create<UIStore>()(
 )
 
 // Selectors pour optimiser les re-renders
-export const useIsDarkMode = () => useUIStore(state => state.isDarkMode)
 export const useSidebarOpen = () => useUIStore(state => state.sidebarOpen)
 export const useModals = () => useUIStore(state => state.modals)
 export const useUILoading = () => useUIStore(state => state.ui)

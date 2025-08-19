@@ -1,4 +1,4 @@
-import { useIsDarkMode, useModals, useSidebarOpen, useUILoading, useUIStore } from "@/lib/stores"
+import { useModals, useSidebarOpen, useUILoading, useUIStore } from "@/lib/stores"
 
 /**
  * Hook d'interface pour l'état UI global
@@ -13,20 +13,15 @@ export function useUI() {
     closeModal: store.closeModal,
     currentPage: store.currentPage,
 
-    // Theme
-    isDarkMode: store.isDarkMode,
-
     // Modals
     modals: store.modals,
     openModal: store.openModal,
     setBreadcrumbs: store.setBreadcrumbs,
     setCurrentPage: store.setCurrentPage,
-    setDarkMode: store.setDarkMode,
     setSidebarOpen: store.setSidebarOpen,
     setUILoading: store.setUILoading,
     // Navigation & Layout
     sidebarOpen: store.sidebarOpen,
-    toggleDarkMode: store.toggleDarkMode,
     toggleSidebar: store.toggleSidebar,
 
     // Loading states
@@ -35,16 +30,17 @@ export function useUI() {
 }
 
 /**
- * Hook optimisé pour le theme seul (évite les re-renders inutiles)
+ * Hook optimisé pour le theme avec next-themes
  */
 export function useTheme() {
-  const isDarkMode = useIsDarkMode()
-  const { setDarkMode, toggleDarkMode } = useUIStore()
+  // ✅ Utilise next-themes au lieu de Zustand
+  const { theme, setTheme } = require("next-themes")
+  const isDarkMode = theme === "dark"
 
   return {
     isDarkMode,
-    setDarkMode,
-    toggleDarkMode
+    setTheme,
+    toggleTheme: () => setTheme(isDarkMode ? "light" : "dark")
   }
 }
 

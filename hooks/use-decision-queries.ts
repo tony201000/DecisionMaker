@@ -45,6 +45,34 @@ export const useSaveDecision = () => {
   })
 }
 
+export const useUpsertDecision = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      user,
+      decision,
+      args,
+      existingId
+    }: {
+      user: User | null
+      decision: Omit<Decision, "id" | "createdAt" | "updatedAt">
+      args: Argument[]
+      existingId?: string
+    }) => decisionCrudService.upsertDecision(user, decision, args, existingId),
+    onSuccess: (result, { user }) => {
+      if (user && result.success) {
+        // Invalidate decision history to refresh the list
+        queryClient.invalidateQueries({ queryKey: ["decisionHistory", user.id] })
+        // Update the specific decision in cache if it has an ID
+        if (result.data.decision.id) {
+          queryClient.setQueryData(["decision", result.data.decision.id], result.data.decision)
+        }
+      }
+    }
+  })
+}
+
 export const useUpdateDecision = () => {
   const queryClient = useQueryClient()
 
@@ -57,6 +85,23 @@ export const useUpdateDecision = () => {
         queryClient.invalidateQueries({ queryKey: ["decisionHistory", user.id] })
         // Update the specific decision in cache
         queryClient.setQueryData(["decision", decision.id], updatedDecision)
+      }
+    }
+  })
+}
+
+export const useUpdateDecisionWithLocking = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ user, decision, args }: { user: User | null; decision: Decision; args: Argument[] }) =>
+      decisionCrudService.updateDecisionWithLocking(user, decision, args),
+    onSuccess: (result, { user, decision }) => {
+      if (user && result.success) {
+        // Invalidate decision history to refresh the list
+        queryClient.invalidateQueries({ queryKey: ["decisionHistory", user.id] })
+        // Update the specific decision in cache
+        queryClient.setQueryData(["decision", decision.id], result.data)
       }
     }
   })

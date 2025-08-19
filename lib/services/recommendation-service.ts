@@ -36,8 +36,8 @@ export function getRecommendation(positiveScore: number, negativeScore: number):
  */
 export function getRecommendationFromDecision(decision: Decision): RecommendationType {
   const argumentsArray = decision.arguments || []
-  const positiveScore = argumentsArray.filter(arg => arg?.weight > 0).reduce((sum, arg) => sum + (arg?.weight || 0), 0)
-  const negativeScore = Math.abs(argumentsArray.filter(arg => arg?.weight < 0).reduce((sum, arg) => sum + (arg?.weight || 0), 0))
+  const positiveScore = argumentsArray.filter(arg => arg?.note > 0).reduce((sum, arg) => sum + (arg?.note || 0), 0)
+  const negativeScore = Math.abs(argumentsArray.filter(arg => arg?.note < 0).reduce((sum, arg) => sum + (arg?.note || 0), 0))
 
   return getRecommendation(positiveScore, negativeScore)
 }
@@ -46,9 +46,9 @@ export function getRecommendationFromDecision(decision: Decision): Recommendatio
  * Calcule la recommandation basée sur un poids individuel (pour EditableArgumentItem)
  * Remplace getRecommendationText dans EditableArgumentItem
  */
-export function getRecommendationFromWeight(weight: number): RecommendationType {
-  if (weight > 0) return "favorable"
-  if (weight < 0) return "defavorable"
+export function getRecommendationFromNote(note: number): RecommendationType {
+  if (note > 0) return "favorable"
+  if (note < 0) return "defavorable"
   return "incertain"
 }
 

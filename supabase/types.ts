@@ -14,21 +14,21 @@ export type Database = {
           decision_id: string | null
           id: string
           text: string
-          weight: number
+          note: number
         }
         Insert: {
           created_at?: string | null
           decision_id?: string | null
           id?: string
           text: string
-          weight: number
+          note: number
         }
         Update: {
           created_at?: string | null
           decision_id?: string | null
           id?: string
           text?: string
-          weight?: number
+          note?: number
         }
         Relationships: [
           {

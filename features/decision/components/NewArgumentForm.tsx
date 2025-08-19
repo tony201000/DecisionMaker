@@ -2,16 +2,17 @@
 
 import { Plus } from "lucide-react"
 import type React from "react"
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import type { NewArgument } from "@/features/decision/schemas"
 import { DECISION_CONSTANTS } from "@/lib/constants"
 import { getGradient } from "@/lib/utils/decision-styles"
 
 interface NewArgumentFormProps {
-  newArgument: { text: string; weight: number }
-  setNewArgument: (arg: { text: string; weight: number }) => void
+  newArgument: NewArgument
+  setNewArgument: (arg: NewArgument) => void
   onAddArgument: () => void
 }
 
@@ -19,19 +20,35 @@ export const NewArgumentForm: React.FC<NewArgumentFormProps> = ({ newArgument, s
   const sliderRef = useRef<HTMLDivElement>(null)
   const ratings = useMemo(() => Array.from({ length: 21 }, (_, i) => i - 10), [])
   const buttonWidth = 48 // w-12 = 48px
+  const gapWidth = 4 // gap-1 = 4px
 
-  // Center slider on selected value
-  useEffect(() => {
+  // Function to center slider on selected value
+  const centerSlider = useCallback(() => {
     if (sliderRef.current) {
-      const selectedIndex = ratings.indexOf(newArgument.weight)
+      const selectedIndex = ratings.indexOf(newArgument.note)
       const containerWidth = sliderRef.current.clientWidth
-      const scrollPosition = selectedIndex * buttonWidth - containerWidth / 2 + buttonWidth / 2
+      const scrollPosition = selectedIndex * (buttonWidth + gapWidth) - containerWidth / 2 + buttonWidth / 2
       sliderRef.current.scrollTo({
         behavior: "smooth",
         left: Math.max(0, scrollPosition)
       })
     }
-  }, [newArgument.weight, ratings])
+  }, [newArgument.note, ratings])
+
+  // Center slider on selected value change
+  useEffect(() => {
+    centerSlider()
+  }, [centerSlider])
+
+  // Center slider on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      centerSlider()
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [centerSlider])
 
   const remainingChars = DECISION_CONSTANTS.MAX_ARGUMENT_LENGTH - newArgument.text.length
 
@@ -73,10 +90,10 @@ export const NewArgumentForm: React.FC<NewArgumentFormProps> = ({ newArgument, s
             >
               <input
                 type="radio"
-                name="argument-weight"
+                name="argument-note"
                 value={rating}
-                checked={newArgument.weight === rating}
-                onChange={() => setNewArgument({ ...newArgument, weight: rating })}
+                checked={newArgument.note === rating}
+                onChange={() => setNewArgument({ ...newArgument, note: rating })}
                 className="sr-only"
                 aria-label={`Note ${rating}`}
               />
@@ -84,7 +101,7 @@ export const NewArgumentForm: React.FC<NewArgumentFormProps> = ({ newArgument, s
                 className={`
                   w-12 h-12 rounded-full text-sm font-medium transition-all duration-200 flex-shrink-0 inline-flex items-center justify-center cursor-pointer
                   ${getGradient(rating)}
-                  ${newArgument.weight === rating ? "ring-2 ring-primary scale-110" : "hover:scale-105"}
+                  ${newArgument.note === rating ? "ring-2 ring-primary scale-110" : "hover:scale-105"}
                 `}
               >
                 {rating}

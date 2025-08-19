@@ -79,7 +79,7 @@ export function HeroSection({ user, loading }: HeroSectionProps) {
             <div className="flex items-center space-x-6 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-accent" />
-                <span>Gratuit pour commencer</span>
+                <span>Gratuit pour toujours</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-accent" />

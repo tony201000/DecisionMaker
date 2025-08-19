@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS arguments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   decision_id UUID REFERENCES decisions(id) ON DELETE CASCADE,
   text TEXT NOT NULL,
-  weight INTEGER NOT NULL CHECK (weight >= -10 AND weight <= 10),
+  note INTEGER NOT NULL CHECK (note >= -10 AND note <= 10),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

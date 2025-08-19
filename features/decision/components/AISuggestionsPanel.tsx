@@ -10,7 +10,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { RecommendationBadge } from "@/components/ui/recommendation-badge"
 import { Textarea } from "@/components/ui/textarea"
 import { useAISuggestions } from "@/hooks/use-ai-suggestions"
-import { getRecommendationFromWeight, getRecommendationLabel } from "@/lib/services/recommendation-service"
+import { getRecommendationFromNote, getRecommendationLabel } from "@/lib/services/recommendation-service"
 import { getGradient } from "@/lib/utils/decision-styles"
 import type { AISuggestion } from "@/types/decision"
 
@@ -26,7 +26,7 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ decision
   // ✅ LOCAL: État d'édition temporaire (spécifique au composant)
   // ✅ LOCAL: État d'édition temporaire (spécifique au composant)
   const [editingSuggestions, setEditingSuggestions] = useState<{
-    [key: number]: { text: string; weight: number }
+    [key: number]: { text: string; note: number }
   }>({})
 
   const ratings = Array.from({ length: 21 }, (_, i) => i - 10)
@@ -34,11 +34,11 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ decision
   const startEditingSuggestion = (index: number, suggestion: AISuggestion) => {
     setEditingSuggestions(prev => ({
       ...prev,
-      [index]: { text: suggestion.text, weight: suggestion.weight }
+      [index]: { note: suggestion.note, text: suggestion.text }
     }))
   }
 
-  const updateSuggestionEdit = (index: number, field: "text" | "weight", value: string | number) => {
+  const updateSuggestionEdit = (index: number, field: "text" | "note", value: string | number) => {
     setEditingSuggestions(prev => ({
       ...prev,
       [index]: { ...prev[index], [field]: value }
@@ -50,8 +50,8 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ decision
     if (edited?.text.trim()) {
       addSuggestion({
         ...originalSuggestion,
-        text: edited.text,
-        weight: edited.weight
+        note: edited.note,
+        text: edited.text
       })
     }
     setEditingSuggestions(prev => {
@@ -99,7 +99,7 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ decision
           <div className="space-y-3">
             {aiSuggestions.map((suggestion, index) => (
               <div
-                key={suggestion.text}
+                key={suggestion.id}
                 className="p-4 border rounded-lg bg-muted/50 space-y-2"
               >
                 {editingSuggestions[index] ? (
@@ -116,7 +116,7 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ decision
                         {ratings.map(rating => {
                           const baseClasses = "w-8 h-8 rounded text-xs font-medium transition-all duration-200 flex-shrink-0"
                           const gradientClass = getGradient(rating)
-                          const isSelected = editingSuggestions[index]?.weight === rating
+                          const isSelected = editingSuggestions[index]?.note === rating
                           const selectionClass = isSelected ? "ring-2 ring-primary scale-110" : "hover:scale-105"
                           const finalClassName = `${baseClasses} ${gradientClass} ${selectionClass}`
 
@@ -124,7 +124,7 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ decision
                             <button
                               type="button"
                               key={rating}
-                              onClick={() => updateSuggestionEdit(index, "weight", rating)}
+                              onClick={() => updateSuggestionEdit(index, "note", rating)}
                               className={finalClassName}
                             >
                               {rating}
@@ -157,7 +157,7 @@ export const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ decision
                       <p className="text-sm text-muted-foreground mt-1">{suggestion.reasoning}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <RecommendationBadge recommendation={getRecommendationLabel(getRecommendationFromWeight(suggestion.weight))} />
+                      <RecommendationBadge recommendation={getRecommendationLabel(getRecommendationFromNote(suggestion.note))} />
                       <Button
                         size="sm"
                         variant="ghost"

@@ -3,7 +3,8 @@
 import { useMemo } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { useCurrentDecision } from "@/hooks/use-current-decision"
-import { useDecisionHistory, useDeleteDecision, usePinDecision, useRenameDecision } from "@/hooks/use-decision-queries"
+import { useDecisionActions } from "@/hooks/use-decision-actions"
+import { useDecisionHistory } from "@/hooks/use-decision-queries"
 import { createClient } from "@/lib/supabase/client"
 import { SidebarActions } from "./sidebar-actions"
 import { SidebarAuth } from "./sidebar-auth"
@@ -19,15 +20,13 @@ import { SidebarUser } from "./sidebar-user"
 export function SidebarContent() {
   const { user } = useAuth()
   // ✅ API ZUSTAND PURE
-  const { currentDecisionId, loadDecision } = useCurrentDecision()
+  const { currentDecisionId, loadDecision, createNewDecision } = useCurrentDecision()
 
   // Use proper decision history hook instead of deprecated savedDecisions
   const { data: savedDecisions = [] } = useDecisionHistory(user)
 
-  // React Query mutations for decision operations
-  const deleteDecisionMutation = useDeleteDecision()
-  const renameDecisionMutation = useRenameDecision()
-  const pinDecisionMutation = usePinDecision()
+  // Utiliser le hook centralisé pour les actions de décision
+  const { handleDecisionRename: renameDecision, handleDecisionDelete: deleteDecision, handleDecisionPin: pinDecision } = useDecisionActions()
 
   // Calculation directe des décisions récentes au lieu d'un useEffect
   const decisions = useMemo(() => {
@@ -45,29 +44,12 @@ export function SidebarContent() {
   }
 
   const handleNewDecision = () => {
-    window.location.href = "/platform"
+    // ✅ Utilise l'API Zustand au lieu de recharger la page
+    createNewDecision()
   }
 
   const handleViewAll = () => {
     window.location.href = "/platform/history"
-  }
-
-  const handleDecisionRename = (id: string, title: string) => {
-    if (user) {
-      renameDecisionMutation.mutate({ decisionId: id, newTitle: title, user })
-    }
-  }
-
-  const handleDecisionDelete = (id: string) => {
-    if (user) {
-      deleteDecisionMutation.mutate({ decisionId: id, user })
-    }
-  }
-
-  const handleDecisionPin = (id: string) => {
-    if (user) {
-      pinDecisionMutation.mutate({ decisionId: id, user })
-    }
   }
 
   return (
@@ -84,9 +66,9 @@ export function SidebarContent() {
           decisions={decisions}
           currentDecisionId={currentDecisionId || undefined}
           onDecisionSelect={loadDecision}
-          onDecisionRename={handleDecisionRename}
-          onDecisionDelete={handleDecisionDelete}
-          onDecisionPin={handleDecisionPin}
+          onDecisionRename={renameDecision}
+          onDecisionDelete={deleteDecision}
+          onDecisionPin={pinDecision}
           onViewAll={handleViewAll}
         />
       )}

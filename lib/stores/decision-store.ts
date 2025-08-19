@@ -20,9 +20,8 @@ interface DecisionState {
   newArgumentForm: {
     isOpen: boolean
     text: string
-    weight: number
+    note: number
   }
-
 }
 
 interface DecisionActions {
@@ -45,7 +44,7 @@ interface DecisionActions {
   // New argument form
   setNewArgumentFormOpen: (open: boolean) => void
   setNewArgumentText: (text: string) => void
-  setNewArgumentWeight: (weight: number) => void
+  setNewArgumentNote: (note: number) => void
   resetNewArgumentForm: () => void
 
   // Utility actions
@@ -68,8 +67,8 @@ const initialState: DecisionState = {
   isEditing: false,
   newArgumentForm: {
     isOpen: false,
-    text: "",
-    weight: 0
+    note: 0,
+    text: ""
   }
 }
 
@@ -105,18 +104,18 @@ export const useDecisionStore = create<DecisionStore>()(
 
       getNegativeScore: () => {
         const { draftArguments } = get()
-        return Math.abs(draftArguments.filter(arg => arg.weight < 0).reduce((sum, arg) => sum + arg.weight, 0))
+        return Math.abs(draftArguments.filter(arg => arg.note < 0).reduce((sum, arg) => sum + arg.note, 0))
       },
 
       // Computed values
       getPositiveScore: () => {
         const { draftArguments } = get()
-        return draftArguments.filter(arg => arg.weight > 0).reduce((sum, arg) => sum + arg.weight, 0)
+        return draftArguments.filter(arg => arg.note > 0).reduce((sum, arg) => sum + arg.note, 0)
       },
 
       getSortedArguments: () => {
         const { draftArguments } = get()
-        return [...draftArguments].sort((a, b) => a.weight - b.weight)
+        return [...draftArguments].sort((a, b) => a.note - b.note)
       },
 
       removeDraftArgument: id =>
@@ -134,8 +133,8 @@ export const useDecisionStore = create<DecisionStore>()(
           _state => ({
             newArgumentForm: {
               isOpen: false,
-              text: "",
-              weight: 0
+              note: 0,
+              text: ""
             }
           }),
           false,
@@ -183,6 +182,15 @@ export const useDecisionStore = create<DecisionStore>()(
           "setNewArgumentFormOpen"
         ),
 
+      setNewArgumentNote: note =>
+        set(
+          state => ({
+            newArgumentForm: { ...state.newArgumentForm, note }
+          }),
+          false,
+          "setNewArgumentNote"
+        ),
+
       setNewArgumentText: text =>
         set(
           state => ({
@@ -190,15 +198,6 @@ export const useDecisionStore = create<DecisionStore>()(
           }),
           false,
           "setNewArgumentText"
-        ),
-
-      setNewArgumentWeight: weight =>
-        set(
-          state => ({
-            newArgumentForm: { ...state.newArgumentForm, weight }
-          }),
-          false,
-          "setNewArgumentWeight"
         ),
 
       updateDraftArgument: (id, updates) =>

@@ -1,3 +1,5 @@
+import { NewArgumentSchema } from "@/features/decision/schemas"
+import { DecisionCrudService } from "@/lib/services/decision-crud-service"
 import {
   useCurrentDecisionId,
   useDecisionScores,
@@ -10,7 +12,8 @@ import {
   useSortedDraftArguments
   // ❌ SUPPRIMÉ : useValidation (legacy)
 } from "@/lib/stores"
-import { NewArgumentSchema } from "@/features/decision/schemas"
+
+const decisionCrudService = new DecisionCrudService()
 
 /**
  * Hook d'interface pour la gestion de décision courante avec Zustand
@@ -33,8 +36,34 @@ export function useCurrentDecision() {
     isEditing: store.isEditing,
 
     // Convenience methods
-    loadDecision: (decisionId: string) => {
+    loadDecision: async (decisionId: string) => {
       store.setCurrentDecisionId(decisionId)
+
+      // ✅ CORRECTION CRITIQUE : Charger les données réelles au lieu de juste l'ID
+      try {
+        const decision = await decisionCrudService.loadDecisionById(decisionId)
+        if (decision) {
+          // Charger les données complètes dans le draft
+          store.setDraftDecision({
+            createdAt: decision.createdAt,
+            description: decision.description,
+            id: decision.id,
+            title: decision.title,
+            updatedAt: decision.updatedAt,
+            version: decision.version
+          })
+
+          // Charger les arguments
+          store.setDraftArguments(decision.arguments || [])
+
+          // Marquer comme non modifié puisque les données viennent de la DB
+          store.setHasUnsavedChanges(false)
+        }
+      } catch (error) {
+        console.error("Error loading decision:", error)
+        // En cas d'erreur, au moins s'assurer que l'ID est stocké
+      }
+
       store.setIsEditing(false)
     },
 
@@ -82,7 +111,7 @@ export function useArguments() {
     removeArgument: store.removeDraftArgument,
     setArguments: store.setDraftArguments,
     sortedArguments,
-    updateArgumentWeight: (id: string, weight: number) => store.updateDraftArgument(id, { weight })
+    updateArgumentNote: (id: string, note: number) => store.updateDraftArgument(id, { note })
   }
 }
 
@@ -91,21 +120,21 @@ export function useArguments() {
  */
 export function useNewArgumentFormZustand() {
   const form = useNewArgumentForm()
-  const { setNewArgumentFormOpen, setNewArgumentText, setNewArgumentWeight, resetNewArgumentForm, addDraftArgument } = useDecisionStore()
+  const { setNewArgumentFormOpen, setNewArgumentText, setNewArgumentNote, resetNewArgumentForm, addDraftArgument } = useDecisionStore()
 
   return {
     // Soumission avec validation Zod
     addArgument: () => {
       // ✅ VALIDATION ZOD - Remplace la validation trim() basique
       const result = NewArgumentSchema.safeParse({
-        text: form.text,
-        weight: form.weight
+        note: form.note,
+        text: form.text
       })
-      
+
       if (result.success) {
         addDraftArgument({
-          text: result.data.text,
-          weight: result.data.weight
+          note: result.data.note,
+          text: result.data.text
         })
         resetNewArgumentForm()
       } else {
@@ -117,19 +146,19 @@ export function useNewArgumentFormZustand() {
     isOpen: form.isOpen,
     // État du formulaire
     newArgument: {
-      text: form.text,
-      weight: form.weight
+      note: form.note,
+      text: form.text
     },
     openForm: () => setNewArgumentFormOpen(true),
     resetForm: resetNewArgumentForm,
 
     // Actions
-    setNewArgument: (arg: { text: string; weight: number }) => {
+    setNewArgument: (arg: { text: string; note: number }) => {
       setNewArgumentText(arg.text)
-      setNewArgumentWeight(arg.weight)
+      setNewArgumentNote(arg.note)
     },
-    setNewArgumentText,
-    setNewArgumentWeight
+    setNewArgumentNote,
+    setNewArgumentText
   }
 }
 

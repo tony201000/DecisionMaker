@@ -124,8 +124,8 @@ export function useAddSuggestion() {
   return {
     handleAddSuggestion: (suggestion: AISuggestion, addArgument: (arg: Omit<Argument, "id">) => void) => {
       const argument: Omit<Argument, "id"> = {
-        text: suggestion.text,
-        weight: suggestion.weight
+        note: suggestion.note,
+        text: suggestion.text
       }
       addArgument(argument)
     }

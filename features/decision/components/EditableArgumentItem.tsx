@@ -5,19 +5,19 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { RecommendationBadge } from "@/components/ui/recommendation-badge"
 import { RatingSlider } from "@/features/decision/components"
-import { getRecommendationFromWeight, getRecommendationLabel } from "@/lib/services/recommendation-service"
+import { getRecommendationFromNote, getRecommendationLabel } from "@/lib/services/recommendation-service"
 import type { Argument } from "@/types/decision"
 
 interface EditableArgumentItemProps {
   argument: Argument
   onRemove: (id: string) => void
-  onUpdateWeight: (id: string, weight: number) => void
+  onUpdateNote: (id: string, note: number) => void
   onUpdateText: (id: string, text: string) => void
 }
 
-export const EditableArgumentItem: React.FC<EditableArgumentItemProps> = ({ argument, onRemove, onUpdateWeight, onUpdateText }) => {
+export const EditableArgumentItem: React.FC<EditableArgumentItemProps> = ({ argument, onRemove, onUpdateNote, onUpdateText }) => {
   // Use unified recommendation service
-  const recommendation = getRecommendationFromWeight(argument.weight)
+  const recommendation = getRecommendationFromNote(argument.note)
   const recommendationLabel = getRecommendationLabel(recommendation)
 
   return (
@@ -36,9 +36,9 @@ export const EditableArgumentItem: React.FC<EditableArgumentItemProps> = ({ argu
         </div>
       </div>
       <RatingSlider
-        value={argument.weight}
-        onChange={(weight: number, text: string) => {
-          onUpdateWeight(argument.id, weight)
+        value={argument.note}
+        onChange={(note: number, text: string) => {
+          onUpdateNote(argument.id, note)
           onUpdateText(argument.id, text)
         }}
       />

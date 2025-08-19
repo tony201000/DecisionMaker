@@ -10,14 +10,14 @@ import type { Argument } from "@/types/decision"
 interface ArgumentListProps {
   arguments: Argument[]
   onRemoveArgument: (id: string) => void
-  onUpdateArgumentWeight: (id: string, weight: number) => void
+  onUpdateArgumentNote: (id: string, note: number) => void
   onUpdateArgumentText: (id: string, text: string) => void
 }
 
 export const ArgumentList: React.FC<ArgumentListProps> = ({
   arguments: sortedArguments,
   onRemoveArgument,
-  onUpdateArgumentWeight,
+  onUpdateArgumentNote,
   onUpdateArgumentText
 }) => {
   return (
@@ -39,12 +39,12 @@ export const ArgumentList: React.FC<ArgumentListProps> = ({
             {sortedArguments.map(argument => (
               <div
                 key={argument.id}
-                className={getArgumentColor(argument.weight)}
+                className={getArgumentColor(argument.note)}
               >
                 <EditableArgumentItem
                   argument={argument}
                   onRemove={onRemoveArgument}
-                  onUpdateWeight={onUpdateArgumentWeight}
+                  onUpdateNote={onUpdateArgumentNote}
                   onUpdateText={onUpdateArgumentText}
                 />
               </div>

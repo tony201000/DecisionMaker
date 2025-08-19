@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     // Construire le contexte pour l'IA
     const existingArgsText =
       existingArguments?.length > 0
-        ? `\n\nArguments déjà identifiés :\n${existingArguments.map((arg: { text: string; weight: number }) => `- ${arg.text} (note: ${arg.weight})`).join("\n")}`
+        ? `\n\nArguments déjà identifiés :\n${existingArguments.map((arg: { text: string; note: number }) => `- ${arg.text} (note: ${arg.note})`).join("\n")}`
         : ""
 
     const prompt = `Tu es un assistant expert en prise de décision qui aide les utilisateurs à explorer tous les aspects d'une décision importante. 
@@ -36,12 +36,12 @@ FORMAT DE RÉPONSE (JSON strict) :
   "suggestions": [
     {
       "text": "Argument positif concret et spécifique",
-      "weight": 7,
+      "note": 7,
       "category": "Financier"
     },
     {
       "text": "Argument négatif concret et spécifique", 
-      "weight": -5,
+      "note": -5,
       "category": "Émotionnel"
     }
   ]
